@@ -1,5 +1,6 @@
 package com.example.volare.model;
 
+import com.example.volare.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PACKAGE)
 @Table(name = "story_boards")
-public class StoryBoard {
+public class StoryBoard extends BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "sb_id")

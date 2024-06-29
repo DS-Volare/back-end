@@ -1,5 +1,6 @@
 package com.example.volare.model;
 
+import com.example.volare.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PACKAGE)
 @Table(name = "story_script_files")
-public class StoryBoardScriptFile {
+public class StoryBoardScriptFile extends BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "sbd_id")
@@ -26,5 +27,4 @@ public class StoryBoardScriptFile {
     @ManyToOne(fetch = LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "sb_id")
     private StoryBoard storyBoard;
-
 }
