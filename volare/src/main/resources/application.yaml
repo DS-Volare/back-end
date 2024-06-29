@@ -3,8 +3,8 @@ spring:
     name: volare
   datasource:
     url: ENC(jwY6BGUij+iUoWHLrW28+F0qnFzMGSP0+ijG+beAa5RbnxhuaUVAWHJm5b18sFPDmrzoD11qpwc=)
-    username: ENC(i34cG443XkChzhInyrNfAiz1JYn4Nz6P)
-    password: ENC(cst9wOPu2+Vx6GdlZ6LKbA==)
+    username: ENC(pyFe3UZ+UR3DfaU3iFSB8Q==)
+    password: ENC(cm3ViRUORYrrZBVk3P/iPqiXOPR6wZtJ)
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
