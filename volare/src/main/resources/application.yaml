@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: volare
+  datasource:
+    url: ENC(jwY6BGUij+iUoWHLrW28+F0qnFzMGSP0+ijG+beAa5RbnxhuaUVAWHJm5b18sFPDmrzoD11qpwc=)
+    username: ENC(i34cG443XkChzhInyrNfAiz1JYn4Nz6P)
+    password: ENC(cst9wOPu2+Vx6GdlZ6LKbA==)
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    database: postgresql
+    hibernate:
+      ddl-auto: create
+  profiles:
+    include: application-private
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
