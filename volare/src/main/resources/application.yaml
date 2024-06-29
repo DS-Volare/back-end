@@ -2,7 +2,7 @@ spring:
   application:
     name: volare
   datasource:
-    url: ENC(jwY6BGUij+iUoWHLrW28+F0qnFzMGSP0+ijG+beAa5RbnxhuaUVAWHJm5b18sFPDmrzoD11qpwc=)
+    url: ENC(0B0OtFL/R3Tvff7tCK3zZwSIv78RKrQ5Ops/Nls7y54ldLM/G9Jo+EvzVutrwH3bg8UmCY9IBQ0=)
     username: ENC(pyFe3UZ+UR3DfaU3iFSB8Q==)
     password: ENC(cm3ViRUORYrrZBVk3P/iPqiXOPR6wZtJ)
     driver-class-name: org.postgresql.Driver
