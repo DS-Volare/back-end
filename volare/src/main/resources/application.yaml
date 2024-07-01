@@ -11,9 +11,8 @@ spring:
     database: postgresql
     hibernate:
       ddl-auto: create
-  profiles:
-    include: application-private
 
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
+    password: volare
