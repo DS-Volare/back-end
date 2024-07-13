@@ -1,4 +1,4 @@
-package com.example.volare.global.common.auth.dto;
+package com.example.volare.global.common.auth;
 
 
 

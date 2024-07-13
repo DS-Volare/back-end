@@ -2,8 +2,6 @@ package com.example.volare.global.common.auth;
 
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.TempHandler;
-import com.example.volare.global.common.auth.dto.OAuthAttributes;
-import com.example.volare.global.common.auth.dto.SessionUser;
 import com.example.volare.model.User;
 import com.example.volare.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -16,7 +14,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -26,6 +23,7 @@ import java.util.Optional;
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UserRepository userRepository;
+    private final JwtService jwtService;
     private final HttpSession httpSession;
 
     @Override
@@ -50,8 +48,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 사용자 저장 또는 업데이트
         User user = saveOrUpdate(attributes);
 
-        // 세션에 사용자 정보 저장
-        httpSession.setAttribute("user", new SessionUser(user));
+        // 토큰 생성 및 세션에 저장
+        String userUUID = String.valueOf(user.getId());
+        TokenDTO tokens = jwtService.createToken(userUUID);
+        httpSession.setAttribute("accessToken", tokens.getAccessToken());
+        httpSession.setAttribute("refreshToken", tokens.getRefreshToken());
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
@@ -68,6 +69,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         } else {
             // 가입되지 않은 사용자 => User 엔티티 생성 후 저장
             User newUser = attributes.toEntity();
+            // 토큰 생성
             return userRepository.save(newUser);
         }
     }
