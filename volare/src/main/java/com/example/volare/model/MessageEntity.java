@@ -19,7 +19,7 @@ public class MessageEntity {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     // 다대일 관계: 하나의 채팅방에 속함

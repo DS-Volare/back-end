@@ -20,7 +20,7 @@ public class ChatRoomEntity {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
     // 다대일 관계: 여러 개의 메시지가 하나의 채팅방에 속함
