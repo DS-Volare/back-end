@@ -1,5 +1,6 @@
 package com.example.volare.global.common.auth;
 
+import com.example.volare.global.common.auth.model.TokenDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

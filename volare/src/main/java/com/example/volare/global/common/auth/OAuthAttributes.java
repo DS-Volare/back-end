@@ -63,11 +63,5 @@ public class OAuthAttributes {
                 .nameAttributeKey(usernameAttributeName)
                 .build();
     }
-    // User 엔티티 생성
-    public User toEntity() {
-        return User.builder()
-                .email(email)
-                .picture(picture)
-                .build();
-    }
+
 }

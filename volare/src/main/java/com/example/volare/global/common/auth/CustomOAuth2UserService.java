@@ -2,6 +2,7 @@ package com.example.volare.global.common.auth;
 
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.TempHandler;
+import com.example.volare.global.common.auth.model.TokenDTO;
 import com.example.volare.model.User;
 import com.example.volare.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
@@ -48,12 +49,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 사용자 저장 또는 업데이트
         User user = saveOrUpdate(attributes);
 
-        // 토큰 생성 및 세션에 저장
-        String userUUID = String.valueOf(user.getId());
-        TokenDTO tokens = jwtService.createToken(userUUID);
-        httpSession.setAttribute("accessToken", tokens.getAccessToken());
-        httpSession.setAttribute("refreshToken", tokens.getRefreshToken());
-
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
                 attributes.getAttributes(),
@@ -68,9 +63,23 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             throw new TempHandler(ErrorStatus._BAD_REQUEST);
         } else {
             // 가입되지 않은 사용자 => User 엔티티 생성 후 저장
-            User newUser = attributes.toEntity();
-            // 토큰 생성
+
+            // 토큰 생성 및 세션에 저장
+            String userUUID = String.valueOf(attributes.getEmail());
+            TokenDTO tokens = jwtService.createToken(userUUID);
+            httpSession.setAttribute("accessToken", tokens.getAccessToken());
+            httpSession.setAttribute("refreshToken", tokens.getRefreshToken());
+
+            //Todo: 저장 장소 변경 리팩토링
+
+            User newUser = User.builder()
+                    .email(attributes.getEmail())
+                    .picture(attributes.getPicture())
+                    .accessToken(tokens.getAccessToken())
+                    .refreshToken(tokens.getRefreshToken())
+                    .build();
             return userRepository.save(newUser);
         }
+
     }
 }

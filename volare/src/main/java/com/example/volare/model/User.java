@@ -2,10 +2,7 @@ package com.example.volare.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.ArrayList;
@@ -13,6 +10,8 @@ import java.util.List;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
 public class User {
@@ -22,30 +21,17 @@ public class User {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     private String id;
 
-    private String name;
-
     @NotNull
     private String email;
 
     @Column
     private String picture;
 
+    //TODO: Redis 저장으로 변경
+    private String accessToken;
+    private String refreshToken;
 
     @OneToMany(mappedBy = "member")
     private List<ChatRoomEntity> chatRooms = new ArrayList<>();
-
-    @Builder
-    public User(String name, String email, String picture) {
-        this.name = name;
-        this.email = email;
-        this.picture = picture;
-    }
-
-    public User update(String name, String picture) {
-        this.name = name;
-        this.picture = picture;
-
-        return this;
-    }
 
 }

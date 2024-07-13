@@ -1,4 +1,4 @@
-package com.example.volare.global.common.auth;
+package com.example.volare.global.common.auth.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
