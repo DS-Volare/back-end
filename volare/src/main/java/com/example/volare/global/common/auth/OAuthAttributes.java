@@ -28,12 +28,12 @@ public class OAuthAttributes {
 
     // OAuth2User에서 반환하는 사용자 정보는 Map
     // 따라서 값 하나하나를 변환해야 한다.
-    public static OAuthAttributes of(String registrationId,
+    public static OAuthAttributes of(User.SocialType provider,
                                      String userNameAttributeName,
                                      Map<String, Object> attributes) {
 
         // 네이버인지 판단하는 코드 추가
-        if ("naver".equals(registrationId)) {
+        if(provider == User.SocialType.NAVER) {
             return ofNaver("id", attributes); // id를 user_name으로 지정
         }
         return ofGoogle(userNameAttributeName, attributes);
@@ -43,7 +43,6 @@ public class OAuthAttributes {
     private static OAuthAttributes ofGoogle(String usernameAttributeName,
                                             Map<String, Object> attributes) {
         return OAuthAttributes.builder()
-                .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
                 .picture((String) attributes.get("picture"))
                 .attributes(attributes)

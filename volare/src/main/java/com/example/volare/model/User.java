@@ -31,7 +31,15 @@ public class User {
     private String accessToken;
     private String refreshToken;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SocialType socialType;
+
     @OneToMany(mappedBy = "member")
     private List<ChatRoomEntity> chatRooms = new ArrayList<>();
+
+    public enum SocialType{
+        GOOGLE,NAVER
+    }
 
 }

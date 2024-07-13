@@ -34,20 +34,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // 로그인 진행 중인 서비스를 구분
         // 네이버로 로그인 진행 중인지, 구글로 로그인 진행 중인지
-        String registrationId = userRequest.getClientRegistration().getRegistrationId();
-
-        // OAuth2 로그인 진행 시 키가 되는 필드 값(Primary Key와 같은 의미)
-        // 구글의 경우 기본적으로 코드를 지원
-        String userNameAttributeName = userRequest.getClientRegistration()
-                .getProviderDetails()
-                .getUserInfoEndpoint()
+        // provider - string to enum으로 변환
+        User.SocialType provider = User.SocialType.valueOf(userRequest.getClientRegistration().getRegistrationId().toUpperCase());
+        String userNameAttribute = userRequest.getClientRegistration()
+                .getProviderDetails().getUserInfoEndpoint()
                 .getUserNameAttributeName();
 
-        // OAuth2UserService를 통해 가져온 OAuth2User의 attribute 등을 담을 클래스
-        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, oAuth2User.getAttributes());
+        OAuthAttributes attributes = OAuthAttributes.of(provider, userNameAttribute, oAuth2User.getAttributes());
 
-        // 사용자 저장 또는 업데이트
-        User user = saveOrUpdate(attributes);
+        User user = saveOrUpdate(attributes,provider);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
@@ -55,7 +50,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 attributes.getNameAttributeKey());
     }
 
-    private User saveOrUpdate(OAuthAttributes attributes) {
+    private User saveOrUpdate(OAuthAttributes attributes, User.SocialType provider) {
         Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
 
         if (existingUser.isPresent()) {
@@ -77,6 +72,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     .picture(attributes.getPicture())
                     .accessToken(tokens.getAccessToken())
                     .refreshToken(tokens.getRefreshToken())
+                    .socialType(provider)
                     .build();
             return userRepository.save(newUser);
         }
