@@ -1,7 +1,7 @@
 package com.example.volare.global.common.auth.dto;
 
 
-import com.example.volare.global.common.status.Role;
+
 import com.example.volare.model.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +13,6 @@ public class OAuthAttributes {
 
     private Map<String, Object> attributes;
     private String nameAttributeKey;
-    private String name;
     private String email;
     private String picture;
 
@@ -23,7 +22,6 @@ public class OAuthAttributes {
                            String email, String picture) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
-        this.name = name;
         this.email = email;
         this.picture = picture;
     }
@@ -68,10 +66,8 @@ public class OAuthAttributes {
     // User 엔티티 생성
     public User toEntity() {
         return User.builder()
-                .name(name)
                 .email(email)
                 .picture(picture)
-                .role(Role.USER)
                 .build();
     }
 }

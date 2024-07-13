@@ -1,5 +1,7 @@
 package com.example.volare.global.common.auth;
 
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
+import com.example.volare.global.apiPayload.exception.handler.TempHandler;
 import com.example.volare.global.common.auth.dto.OAuthAttributes;
 import com.example.volare.global.common.auth.dto.SessionUser;
 import com.example.volare.model.User;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -51,18 +54,21 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         httpSession.setAttribute("user", new SessionUser(user));
 
         return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
                 attributes.getAttributes(),
                 attributes.getNameAttributeKey());
     }
 
     private User saveOrUpdate(OAuthAttributes attributes) {
-        User user = userRepository.findByEmail(attributes.getEmail())
-                // 구글 사용자 정보 업데이트(이미 가입된 사용자) => 업데이트
-                .map(entity -> entity.update(attributes.getName(), attributes.getPicture()))
-                // 가입되지 않은 사용자 => User 엔티티 생성
-                .orElse(attributes.toEntity());
+        Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
 
-        return userRepository.save(user);
+        if (existingUser.isPresent()) {
+            // 이미 가입된 사용자인 경우 예외 발생
+            throw new TempHandler(ErrorStatus._BAD_REQUEST);
+        } else {
+            // 가입되지 않은 사용자 => User 엔티티 생성 후 저장
+            User newUser = attributes.toEntity();
+            return userRepository.save(newUser);
+        }
     }
 }

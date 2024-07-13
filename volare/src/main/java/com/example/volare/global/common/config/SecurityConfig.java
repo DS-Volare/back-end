@@ -1,7 +1,6 @@
 package com.example.volare.global.common.config;
 
 import com.example.volare.global.common.auth.CustomOAuth2UserService;
-import com.example.volare.global.common.status.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,7 +29,6 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests((authorizeRequest) -> authorizeRequest
-                        .requestMatchers("/posts/new", "/comments/save").hasRole(Role.USER.name())
                         .requestMatchers("/", "/css/**", "images/**", "/js/**", "/login/*", "/logout/*", "/posts/**", "/comments/**").permitAll()
                         .anyRequest().authenticated()
                 )

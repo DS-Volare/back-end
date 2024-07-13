@@ -17,15 +17,15 @@ spring:
         registration:
           # 구글 로그인 추가
           google:
-            client-id: 729403424984-1p6a6rgb698m2nkg3o6644s3p98hjlo8.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ENC(jVepAyjB8MCtl43ibC/As86j14qCd5rhOaIAuqcDyAi1G1xB7dMhmsaIlYy0xXAwM09qAyiYazSvcO4b1nvR2qZe+KvOg56rVcT0G0A/O5ocKrf2A3eHxQ==)
+            client-secret: ENC(fzbhBfBhiXiBuQoychRWFD/29FGrOsL0ZMOcUZ+B3G8opTszGgtojsO+McCY+G4N)
             scope:
               - email
               - profile
           # 네이버 로그인 추가
           naver:
-            client-id: v7KnqlUioGiNdAzf8igN
-            client-secret: fkSCr3k_XR
+            client-id: ENC(R5WVcUibNcwR8oXFK8tPV7gaV2gsRj5N2ljyxKG3ExI=)
+            client-secret: ENC(Nt40ucNchfY/CautqeRQpiWXC6gXhKPB)
             redirect-uri: "http://localhost:8080/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
             scope:
