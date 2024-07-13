@@ -11,6 +11,8 @@ spring:
     database: postgresql
     hibernate:
       ddl-auto: create
+  profiles:
+    include: oauth
 
 jasypt:
   encryptor:

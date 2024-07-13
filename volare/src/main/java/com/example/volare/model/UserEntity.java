@@ -47,5 +47,5 @@ public class UserEntity {
 }
 enum Social{
     Google,
-    Kakao;
+    naver;
 }
