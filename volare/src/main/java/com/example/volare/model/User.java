@@ -18,7 +18,6 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @NotNull
     private String name;
 
     @NotNull

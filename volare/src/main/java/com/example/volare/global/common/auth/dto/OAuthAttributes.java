@@ -34,6 +34,10 @@ public class OAuthAttributes {
                                      String userNameAttributeName,
                                      Map<String, Object> attributes) {
 
+        // 네이버인지 판단하는 코드 추가
+        if ("naver".equals(registrationId)) {
+            return ofNaver("id", attributes); // id를 user_name으로 지정
+        }
         return ofGoogle(userNameAttributeName, attributes);
     }
 
@@ -49,6 +53,18 @@ public class OAuthAttributes {
                 .build();
     }
 
+    // 네이버 생성자 추가
+    private static OAuthAttributes ofNaver(String usernameAttributeName,
+                                           Map<String, Object> attributes) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
+        return OAuthAttributes.builder()
+                .email((String) response.get("email"))
+                .picture((String) response.get("profile_image"))
+                .attributes(response)
+                .nameAttributeKey(usernameAttributeName)
+                .build();
+    }
     // User 엔티티 생성
     public User toEntity() {
         return User.builder()
