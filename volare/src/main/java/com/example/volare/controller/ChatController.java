@@ -1,4 +1,4 @@
-package com.example.volare.Controller;
+package com.example.volare.controller;
 
 import com.example.volare.model.MessageEntity;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,5 @@ public class ChatController {
         template.convertAndSend("/sub/chatroom/1", chat);
         return ResponseEntity.ok().build();
     }
-
-
-    // 채팅방 생성 요청
 
 }
