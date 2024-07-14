@@ -31,4 +31,10 @@ public class MessageEntity {
 
     private String message;
 
+    private MessageType type;
+
+    public enum MessageType {
+        REQUEST,GPT
+    }
+
 }
