@@ -35,7 +35,7 @@ public class User {
     @Column(nullable = false)
     private SocialType socialType;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "user")
     private List<ChatRoomEntity> chatRooms = new ArrayList<>();
 
     public enum SocialType{

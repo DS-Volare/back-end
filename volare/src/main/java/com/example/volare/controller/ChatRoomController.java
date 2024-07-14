@@ -25,5 +25,6 @@ public class ChatRoomController {
         return ApiResponse.onSuccess(ChatRoomDTO.fromDTO(chatRoom));
     }
 
+
 }
 

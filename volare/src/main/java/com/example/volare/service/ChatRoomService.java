@@ -25,7 +25,7 @@ public class ChatRoomService {
     @Transactional
     public String createChatRoom(Long sbId, User user){
         // 스토리보드 생성 확인 유효성  검사 진행
-        StoryScript storyScript = storyScriptRepository.findById(sbId).orElseThrow(() -> new GeneralHandler(ErrorStatus._INTERNAL_SERVER_ERROR));
+        StoryScript storyScript = storyScriptRepository.findById(sbId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // 유저 존재 확인 유효성
         User ChatUser = userRepository.findByEmail(user.getEmail()).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));

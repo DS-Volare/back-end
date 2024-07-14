@@ -31,7 +31,7 @@ public class ChatRoomEntity extends BaseEntity {
     private List<MessageEntity> messages = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY) // 1
-    @JoinColumn(name = "member_id", referencedColumnName = "id") // 2
+    @JoinColumn(name = "user_id", referencedColumnName = "id") // 2
     private User user;
 
     @OneToOne(fetch = LAZY)
