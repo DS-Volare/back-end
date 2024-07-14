@@ -1,4 +1,4 @@
-package com.example.volare.global;
+package com.example.volare.global.common.config;
 
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.jasypt.encryption.StringEncryptor;

@@ -29,7 +29,7 @@ public class ChatRoomEntity {
 
     @ManyToOne(fetch = FetchType.LAZY) // 1
     @JoinColumn(name = "member_id", referencedColumnName = "id") // 2
-    private UserEntity member;
+    private User member;
 
     @Column(nullable = false)
     private String story_id;
