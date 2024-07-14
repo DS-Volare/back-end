@@ -30,14 +30,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()) )// CORS 설정
-                .csrf(csrf -> csrf.disable()) // CSRF 보호 기능 비활성
+                .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 기능 비활성
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorizeRequest) -> authorizeRequest
-                        .requestMatchers("/", "/css/**", "images/**", "/js/**", "/login/*", "/logout/*").permitAll()
+                        .requestMatchers("/", "/css/**", "images/**", "/js/**", "/oauth/**", "/logout/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth // OAuth2 로그인 설정
+                        .authorizationEndpoint(authorization ->
+                                authorization.baseUri("/oauth/authorize") // 기본 URI 설정
+                        )
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // 사용자 서비스 설정
                         .successHandler(customAuthenticationSuccessHandler) // 로그인 성공 핸들러
                 );
@@ -61,4 +64,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration); // 모든 엔드포인트에 대해 CORS 설정 적용
         return source;
     }
+
+
 }
