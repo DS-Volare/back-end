@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity{
 
     @Id
     @GeneratedValue(generator = "system-uuid")

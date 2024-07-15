@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 public class ChatRoomDTO {
 
 // REQUEST
@@ -24,6 +26,19 @@ public class ChatRoomDTO {
 
 
     }
+
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ChatRoomAllMessageResponseDto{
+
+        private String chatRoomId;
+        List<MessageDTO.MessageResponseDto> allMessages;
+
+    }
+
+
 
 //CONVERTER
     public static ChatRoomDTO.ChatRoomResponseDto fromDTO(ChatRoomEntity chatRoom){
