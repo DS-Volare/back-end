@@ -1,6 +1,8 @@
 package com.example.volare.dto;
 
 import com.example.volare.model.MessageEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +16,10 @@ public class MessageDTO {
     @NoArgsConstructor
     @AllArgsConstructor
         public static class MessageRequestDto{
+        @NotBlank(message = "메시지는 필수입니다.")
         private String message;
+
+        @NotBlank(message = "메시지는 필수입니다.")
         private String messageType;
     }
 
