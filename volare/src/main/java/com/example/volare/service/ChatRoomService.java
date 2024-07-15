@@ -21,9 +21,9 @@ public class ChatRoomService {
 
     private final UserRepository userRepository;
 
-    // 채팅방 생성
+    // 채팅방 생성+ 자동 참여
     @Transactional
-    public String createChatRoom(Long sbId, User user){
+    public ChatRoomEntity createChatRoom(Long sbId, User user){
         // 스토리보드 생성 확인 유효성  검사 진행
         StoryScript storyScript = storyScriptRepository.findById(sbId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
@@ -36,6 +36,6 @@ public class ChatRoomService {
                 .build();
 
         ChatRoomEntity save = chatRoomRepository.save(chatRoom);
-        return save.getId();
+        return save;
     }
 }

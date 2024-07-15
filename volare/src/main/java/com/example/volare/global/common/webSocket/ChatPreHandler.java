@@ -1,4 +1,4 @@
-package com.example.volare.global.common.auth;
+package com.example.volare.global.common.webSocket;
 
 import com.example.volare.global.common.auth.JwtService;
 import lombok.RequiredArgsConstructor;
