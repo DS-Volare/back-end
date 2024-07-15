@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -24,16 +26,14 @@ public class MessageService {
         // 채팅방 유효성 검사
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
-        MessageEntity.MessageType messageType = MessageEntity.MessageType.valueOf(message.getMessageType());
-
         MessageEntity saveMessage = MessageEntity.builder()
                 .message(message.getMessage())
                 .chatRoom(chatRoom)
-                .messagetype(messageType)
+                .messagetype(Objects.equals(message.getMessageType(), MessageEntity.MessageType.QUESTION.name()) ? MessageEntity.MessageType.QUESTION : MessageEntity.MessageType.GPT)
                 .build();
-        messageRepository.save(saveMessage);
+        MessageEntity chat = messageRepository.save(saveMessage);
 
         // STOMP 프로토콜을 사용하여 해당 채팅방의 구독자들에게 전송
-        return MessageDTO.fromEntity(saveMessage);
+        return MessageDTO.fromEntity(chat);
     }
 }

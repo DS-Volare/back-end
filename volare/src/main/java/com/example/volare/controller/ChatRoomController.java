@@ -6,10 +6,7 @@ import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/chat")
@@ -20,7 +17,7 @@ public class ChatRoomController {
 
     // 채팅방 생성 요청
     @PostMapping("/{sbId}")
-    public ApiResponse<ChatRoomDTO.ChatRoomResponseDto> createChatRoom(@RequestParam Long sbId, @AuthenticationPrincipal AuthUser authUser){
+    public ApiResponse<ChatRoomDTO.ChatRoomResponseDto> createChatRoom(@PathVariable Long sbId, @AuthenticationPrincipal AuthUser authUser){
         String chatRoom = chatRoomService.createChatRoom(sbId, authUser.getUser());
         return ApiResponse.onSuccess(ChatRoomDTO.fromDTO(chatRoom));
     }

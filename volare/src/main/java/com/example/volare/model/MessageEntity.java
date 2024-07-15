@@ -29,6 +29,8 @@ public class MessageEntity extends BaseEntity {
 
     private String message;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private MessageType messagetype;
 
     public enum MessageType {
