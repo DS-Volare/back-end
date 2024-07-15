@@ -1,8 +1,8 @@
 package com.example.volare.dto;
 
+import com.example.volare.global.common.DateUtil;
 import com.example.volare.model.MessageEntity;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +40,7 @@ public class MessageDTO {
                 .messageId(message.getId())
                 .messageType(message.getMessagetype().name())
                 .message(message.getMessage())
-                .createdAt(message.getCreatedAt().toString())
+                .createdAt(DateUtil.convert(message.getCreatedAt()))
                 .build();
     }
 
