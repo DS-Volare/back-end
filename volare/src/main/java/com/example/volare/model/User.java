@@ -1,5 +1,6 @@
 package com.example.volare.model;
 
+import com.example.volare.global.common.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -14,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity{
 
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -35,7 +36,7 @@ public class User {
     @Column(nullable = false)
     private SocialType socialType;
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "user")
     private List<ChatRoomEntity> chatRooms = new ArrayList<>();
 
     public enum SocialType{

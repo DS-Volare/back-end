@@ -1,14 +1,17 @@
 package com.example.volare.model;
 
+import com.example.volare.global.common.BaseEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import jakarta.persistence.*;
-import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static jakarta.persistence.FetchType.LAZY;
 
 @Data
 @Entity
@@ -16,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="chatroom")
-public class ChatRoomEntity {
+public class ChatRoomEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -28,13 +31,12 @@ public class ChatRoomEntity {
     private List<MessageEntity> messages = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY) // 1
-    @JoinColumn(name = "member_id", referencedColumnName = "id") // 2
-    private User member;
+    @JoinColumn(name = "user_id", referencedColumnName = "id") // 2
+    private User user;
 
-    @Column(nullable = false)
-    private String story_id;
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "script_id")
+    private StoryScript storyScript;
 
-    private String chatsStatus;
-
-    private LocalDate chat_createdAt;
+    private String chatsStatus; // 스토리보드 삭제 시, 채팅도 삭제
 }

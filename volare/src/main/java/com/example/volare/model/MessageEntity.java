@@ -1,13 +1,13 @@
 package com.example.volare.model;
 
 
+import com.example.volare.global.common.BaseEntity;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import jakarta.persistence.*;
-import java.time.LocalDate;
 
 @Data
 @Entity
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="message")
-public class MessageEntity {
+public class MessageEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -27,8 +27,14 @@ public class MessageEntity {
     @JoinColumn(name = "chatting_id", referencedColumnName = "id")
     private ChatRoomEntity chatRoom;
 
-    private LocalDate send_time;
-
     private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MessageType messagetype;
+
+    public enum MessageType {
+        QUESTION,GPT
+    }
 
 }

@@ -22,9 +22,11 @@ public class Novel extends BaseEntity {
     private String Id;
     private String title;
     private String storyFile;
-
     private String storyText;
     private String Image;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
 
 }
