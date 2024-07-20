@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/websocket/**","/websocket/pub/**","/websocket/sub/**","/novels/**");
+        return web -> web.ignoring().requestMatchers("/websocket/**","/websocket/pub/**","/websocket/sub/**");
     }
 
 

@@ -2,6 +2,7 @@ package com.example.volare.service;
 
 import com.example.volare.dto.ScriptDTO;
 import com.example.volare.model.Script;
+import com.example.volare.model.User;
 import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -23,13 +24,24 @@ public class ScriptService {
 
 
     // 스크립트 결과 DB 저장
-    public Script saveStoryScript(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
 
-//        Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertStoryBord(changeNovel);
-//        log.info(novelToStoryScriptResponseDTOMono.toString());
-//       return novelToStoryScriptResponseDTOMono
-//                .map(this::convertToEntity)
-//                .flatMap(entity -> Mono.fromCallable(() -> scriptRepository.save(entity)));
+    //TODO: 속도 테스트를 위함(1) ->비동기 호출 비동기 저장- 완료 후 return
+    /*
+    public Mono<Script> saveStoryScript(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+
+        Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertStoryBord(changeNovel);
+        log.info(novelToStoryScriptResponseDTOMono.toString());
+        return novelToStoryScriptResponseDTOMono
+                .map(this::convertToEntity)
+                .flatMap(entity -> Mono.fromCallable(() -> scriptRepository.save(entity))
+                        .subscribeOn(Schedulers.boundedElastic())); // 비동기 실행
+    }
+     */
+
+
+    //TODO: 속도 테스트를 위함(2) -> 동기식 저장 , 동기식 호출
+    /*
+    public Script saveStoryScript(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // WebClient 호출을 동기식으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
 
@@ -39,8 +51,29 @@ public class ScriptService {
         // 동기식으로 DB에 저장
         return scriptRepository.save(entity);
     }
+    */
 
-    // 스크립트 결과 FE 반환
+
+    //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+        // User 검증 로직
+
+
+        // 웹 클라이언트 호출을 동기적으로 처리
+        ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();
+
+        // 비동기적으로 저장 로직 수행
+        Mono.fromCallable(() -> {
+                    Script entity = convertToEntity(responseDTO);
+                    scriptRepository.save(entity);
+                    return entity;
+                })
+                .subscribeOn(Schedulers.boundedElastic()) // 비동기 실행
+                .subscribe();
+
+        // 스크립트 결과 FE 반환
+        return responseDTO;
+    }
 
     //
     public Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO storyScript){
