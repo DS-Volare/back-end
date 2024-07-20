@@ -8,6 +8,7 @@ public class ScriptDTO {
 
     @Getter
     public static class ScriptRequestDTO{
+        private List<String> candidates;
         private String text;
     }
 
@@ -22,7 +23,7 @@ public class ScriptDTO {
         public static class Script {
 
             //TODO: 대본 하나당 단일 값인지 확인
-            private Scene scene;
+            private  List<Scene> scene;
 
             @Getter
             public static class Scene  {

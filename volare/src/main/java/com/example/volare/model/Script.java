@@ -30,6 +30,7 @@ public class Script extends BaseEntity {
     @JoinColumn(name = "novel_id")
     private Novel novel; // 소설 외래키
 
+    @Column(name = "script_file", columnDefinition = "TEXT", nullable = false)
     private String scriptFile;
 
     @ElementCollection

@@ -2,7 +2,6 @@ package com.example.volare.service;
 
 import com.example.volare.dto.ScriptDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -16,7 +15,6 @@ import reactor.netty.http.client.HttpClient;
 @Slf4j
 @Service
 public class WebClientService {
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // webClient 기본 설정
     private final WebClient webClient = WebClient.builder()
@@ -28,59 +26,17 @@ public class WebClientService {
             .build();
 
     // 소설 변환 api 호출
-//    public Mono<ScriptDTO.NovelToStoryScriptResponseDTO> convertStoryBord(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public Mono<ScriptDTO.NovelToStoryScriptResponseDTO> convertStoryBord(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
 
-//
-public void convertStoryBord(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
-        String jsonString = objectMapper.writeValueAsString(changeNovel);
-        log.info("Request payload: {}", jsonString);
-
-        this.webClient.post()
+        return this.webClient.post()
                 .uri("/convert_script")
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(changeNovel)
-                .retrieve()
-                .bodyToMono(String.class) // 응답을 문자열로 받기
-                .subscribe(responseBody -> {
-                    // 응답을 로그에 출력
-                    log.info("Response body: {}", responseBody);
-
-                    // 응답 JSON을 파싱
-                    try {
-                        JsonNode jsonNode = objectMapper.readTree(responseBody);
-                        log.info("Parsed JSON Node: {}", jsonNode);
-
-                        // JSON 구조 확인
-                        if (jsonNode.has("script")) {
-                            JsonNode scriptNode = jsonNode.get("script");
-                            log.info("Script Node: {}", scriptNode);
-
-                            // script 내용 출력
-                            JsonNode sceneNode = scriptNode.get("scene");
-                            log.info("Scene Node: {}", sceneNode);
-
-                            // JSON 데이터를 처리하고 필요한 정보를 로그에 출력
-                            for (JsonNode scene : sceneNode) {
-                                JsonNode contentNode = scene.get("content");
-                                log.info("Content Node: {}", contentNode);
-
-                                for (JsonNode content : contentNode) {
-                                    String action = content.get("action").asText();
-                                    String character = content.get("character").asText();
-                                    String dialog = content.get("dialog").asText();
-                                    String type = content.get("type").asText();
-
-                                    log.info("Action: {}, Character: {}, Dialog: {}, Type: {}", action, character, dialog, type);
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        log.error("Error during JSON processing: ", e);
-                    }
-                }, error -> {
+                .retrieve()// 응답받기
+                .bodyToMono(ScriptDTO.NovelToStoryScriptResponseDTO.class)
+                .doOnError(error -> {
                     // 오류 처리
-                    log.error("Error during API call: ", error);
+                    // 외부 API Connection refused: no further information 오류는 클라이언트가 서버에 연결을 시도했지만, 서버가 요청을 수락하지 않거나 서버에 연결할 수 없다는
                 });
-
     }
 }

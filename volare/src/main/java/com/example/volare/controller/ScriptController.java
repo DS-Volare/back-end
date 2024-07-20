@@ -22,8 +22,8 @@ public class ScriptController {
 
     // 소설 변환
     @PostMapping("/scripts")
-    public void saveData(@RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
-    scriptService.saveStoryScript(req);
+    public Script saveData(@RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
+    return scriptService.saveStoryScript(req);
     }
 
     // 내 작업 소설 정보 보기
