@@ -1,5 +1,6 @@
 package com.example.volare.controller;
 
+import com.example.volare.global.apiPayload.ApiResponse;
 import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.service.ScriptService;
 import com.example.volare.dto.ScriptDTO;
@@ -24,10 +25,11 @@ public class ScriptController {
 
     // 소설 변환
     @PostMapping("")
-    public  ScriptDTO.NovelToStoryScriptResponseDTO saveData(
+    public ApiResponse<ScriptDTO.NovelToStoryScriptResponseDTO> saveData(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
-    return scriptService.saveStoryScript(authUser.getUser(),req);
+        ScriptDTO.NovelToStoryScriptResponseDTO storyScript = scriptService.saveStoryScript(authUser.getUser(), req);
+        return ApiResponse.onSuccess(storyScript);
     }
 
 
