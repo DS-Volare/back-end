@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PACKAGE;
@@ -29,7 +31,10 @@ public class StoryScript extends BaseEntity {
     private Novel novel;
     private String line;
     private String noLine;
-    private String  characters;
+    @ElementCollection
+    @CollectionTable(name = "story_script_characters", joinColumns = @JoinColumn(name = "script_id"))
+    @Column(name = "character")
+    private List<String> characters;
     private String locates;
     private String time;
 }
