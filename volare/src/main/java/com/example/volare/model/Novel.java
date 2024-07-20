@@ -21,7 +21,6 @@ public class Novel extends BaseEntity {
     @Column(name = "novel_id")
     private String Id;
     private String title; // 소설 제목
-    private String storyFile;
     private String storyText;
     private String Image;
     @ManyToOne(fetch = FetchType.LAZY)
