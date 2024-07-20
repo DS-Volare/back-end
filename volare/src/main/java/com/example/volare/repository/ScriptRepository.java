@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface StoryScriptRepository extends JpaRepository<Script,Long> {
+public interface ScriptRepository extends JpaRepository<Script,Long> {
     Optional<Script> findById(Long sbId);
 }

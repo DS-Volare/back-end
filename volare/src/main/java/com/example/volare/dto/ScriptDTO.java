@@ -4,11 +4,11 @@ import lombok.Getter;
 
 import java.util.List;
 
-public class NovelDTO {
+public class ScriptDTO {
 
     @Getter
-    public static class NovelRequestDTO{
-        private String exchangeNovel;
+    public static class ScriptRequestDTO{
+        private String text;
     }
 
 
@@ -17,9 +17,12 @@ public class NovelDTO {
         private Script script;
         private String script_str;
 
+
         @Getter
         public static class Script {
-            private List<Scene > scene;
+
+            //TODO: 대본 하나당 단일 값인지 확인
+            private Scene scene;
 
             @Getter
             public static class Scene  {
