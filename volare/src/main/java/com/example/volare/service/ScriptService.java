@@ -56,8 +56,7 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
     public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
-        // User 검증 로직
-
+        // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
 
         // 웹 클라이언트 호출을 동기적으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();

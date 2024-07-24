@@ -17,7 +17,6 @@ public class NovelService {
     // 원본 소설 저장
     @Transactional
     public String saveNovel(User user, NovelDTO.NovelRequestDTO novel){
-        // 유저 검증 로직
 
         Novel saveNovel = Novel.builder()
                 .title(novel.getTitle())
