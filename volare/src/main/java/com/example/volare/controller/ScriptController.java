@@ -9,10 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -24,11 +21,12 @@ public class ScriptController {
     // 소설 저장
 
     // 소설 변환
-    @PostMapping("")
+    @PostMapping("/{novelId}")
     public ApiResponse<ScriptDTO.NovelToStoryScriptResponseDTO> saveData(
+            @PathVariable String novelId,
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
-        ScriptDTO.NovelToStoryScriptResponseDTO storyScript = scriptService.saveStoryScript(authUser.getUser(), req);
+        ScriptDTO.NovelToStoryScriptResponseDTO storyScript = scriptService.saveStoryScript(novelId,authUser.getUser(), req);
         return ApiResponse.onSuccess(storyScript);
     }
 

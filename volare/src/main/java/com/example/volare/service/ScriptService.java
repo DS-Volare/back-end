@@ -1,6 +1,9 @@
 package com.example.volare.service;
 
 import com.example.volare.dto.ScriptDTO;
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
+import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
+import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.User;
 import com.example.volare.repository.NovelRepository;
@@ -55,15 +58,19 @@ public class ScriptService {
 
 
     //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
-    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
-        // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+         // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
+
+        // Novel
+        Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+
 
         // 웹 클라이언트 호출을 동기적으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();
 
         // 비동기적으로 저장 로직 수행
         Mono.fromCallable(() -> {
-                    Script entity = convertToEntity(responseDTO);
+                    Script entity = convertToEntity(novel,responseDTO);
                     scriptRepository.save(entity);
                     return entity;
                 })
@@ -75,9 +82,10 @@ public class ScriptService {
     }
 
     //
-    public Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO storyScript){
+    public Script convertToEntity(Novel novel, ScriptDTO.NovelToStoryScriptResponseDTO storyScript){
 
         Script script = Script.builder()
+                .novel(novel)
                 .scriptFile(storyScript.getScript_str()) // script_str을 scriptFile에 설정
                 .locates(storyScript.getScript().getScene().get(0).getLocation()) // location을 locates에 설정
                 .sceneNum(storyScript.getScript().getScene().get(0).getScene_num()) // sceneNum을 sceneNum에 설정
