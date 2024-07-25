@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.swing.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,6 +25,12 @@ public class ScriptService {
     private final WebClientService webClientService;
     private final NovelRepository novelRepository;
     private final ScriptRepository scriptRepository;
+
+    // SAMPLE 조회
+    public Script getSampleScript(Spring sampleTag){
+        Script script = scriptRepository.findByScriptFile(sampleTag.toString()).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return script;
+    }
 
 
     // 스크립트 결과 DB 저장

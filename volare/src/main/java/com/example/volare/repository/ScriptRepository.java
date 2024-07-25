@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface ScriptRepository extends JpaRepository<Script,Long> {
     Optional<Script> findById(Long sbId);
+    Optional<Script> findByScriptFile(String sampleTag);
 }
