@@ -1,6 +1,5 @@
 package com.example.volare.global.common.auth;
 
-import com.example.volare.global.common.auth.model.TokenDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +31,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         response.setContentType("application/json");
 
         // 응답 본문 설정 (필요에 따라 수정 가능)
-        String body = objectMapper.writeValueAsString(new TokenDTO(accessToken, refreshToken));
-        response.getWriter().write(body);
+        // String body = objectMapper.writeValueAsString(new TokenDTO(accessToken, refreshToken));
+        // response.getWriter().write(body);
     }
 }

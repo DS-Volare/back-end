@@ -3,6 +3,7 @@ package com.example.volare.global.common.auth;
 import com.example.volare.global.common.auth.model.TokenDTO;
 import com.example.volare.model.User;
 import com.example.volare.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,6 +25,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final HttpSession httpSession;
+    private final HttpServletResponse httpServletResponse;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -52,8 +54,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
 
         if (existingUser.isPresent()) {
-            // 이미 가입된 사용자인 경우 예외 발생
-            throw new OAuth2AuthenticationException("기존 회원입니다. 소셜 계정을 확인해주세요!");
+            // 이미 가입된 사용자인 경우 리프레시 토큰 비교
+            // 로그인 토큰 값 전달
+            // 응답 설정
+            httpServletResponse.setCharacterEncoding("utf-8");
+            httpServletResponse.setHeader("X-AUTH-TOKEN", existingUser.get().getAccessToken());
+            httpServletResponse.setHeader("refresh-token", existingUser.get().getRefreshToken());
+            httpServletResponse.setContentType("application/json");
+
+
+            return null;
         } else {
             // 가입되지 않은 사용자 => User 엔티티 생성 후 저장
 
