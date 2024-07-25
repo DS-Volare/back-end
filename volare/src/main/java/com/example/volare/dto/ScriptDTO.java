@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ScriptDTO {
 
@@ -56,8 +57,30 @@ public class ScriptDTO {
 
 //CONVERTER
     public static NovelToStoryScriptResponseDTO EntityToDTO(Script scriptEntity){
-
-        
+        return ScriptDTO.NovelToStoryScriptResponseDTO.builder()
+                .script(ScriptDTO.NovelToStoryScriptResponseDTO.Script.builder()
+                        .scene(scriptEntity.getScriptScenes().stream()
+                                .map(scene -> ScriptDTO.NovelToStoryScriptResponseDTO.Script.Scene.builder()
+                                        .location(scene.getLocates())
+                                        .scene_num(scene.getSceneNum())
+                                        .time(scene.getTime())
+                                        .content(scene.getContents().stream()
+                                                .map(content -> ScriptDTO.NovelToStoryScriptResponseDTO.Script.Scene.Content.builder()
+                                                        .action(content.getAction())
+                                                        .character(content.getCharacter())
+                                                        .dialog(content.getDialog())
+                                                        .build()
+                                                )
+                                                .collect(Collectors.toList())
+                                        )
+                                        .build()
+                                )
+                                .collect(Collectors.toList())
+                        )
+                        .build()
+                )
+                .script_str(scriptEntity.getScriptFile())
+                .build();
     }
 
 }
