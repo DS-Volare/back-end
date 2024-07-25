@@ -36,7 +36,7 @@ public class ChatRoomEntity extends BaseEntity {
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "script_id")
-    private StoryScript storyScript;
+    private Script script;
 
     private String chatsStatus; // 스토리보드 삭제 시, 채팅도 삭제
 }
