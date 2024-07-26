@@ -4,6 +4,7 @@ import com.example.volare.model.Script;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,6 +20,7 @@ public class ScriptDTO {
 
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     @Getter
     public static class NovelToStoryScriptResponseDTO {
         private Script script;
@@ -27,14 +29,15 @@ public class ScriptDTO {
 
         @Builder
         @AllArgsConstructor
+        @NoArgsConstructor
         @Getter
         public static class Script {
 
-            //TODO: 대본 하나당 단일 값인지 확인
             private  List<Scene> scene;
 
             @Builder
             @AllArgsConstructor
+            @NoArgsConstructor
             @Getter
             public static class Scene  {
                 private List<Content> content;
@@ -44,6 +47,7 @@ public class ScriptDTO {
 
                 @Builder
                 @AllArgsConstructor
+                @NoArgsConstructor
                 @Getter
                 public static class Content {
                     private String action;

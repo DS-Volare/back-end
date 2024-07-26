@@ -49,3 +49,8 @@ spring:
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
+
+
+logging:
+  level:
+    org.springframework.data.redis: DEBUG

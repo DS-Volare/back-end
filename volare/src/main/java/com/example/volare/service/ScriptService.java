@@ -1,9 +1,9 @@
 package com.example.volare.service;
 
+
 import com.example.volare.dto.ScriptDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
-import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.ScriptScene;
 import com.example.volare.model.User;
@@ -12,6 +12,7 @@ import com.example.volare.repository.ScriptRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -27,10 +28,12 @@ public class ScriptService {
     private final ScriptRepository scriptRepository;
 
     // SAMPLE 조회
-    public Script getSampleScript(String sampleTag){
+    @Cacheable(cacheNames = "SAMPLE_SCRIPTS" , key = "#sampleTag")
+    public ScriptDTO.NovelToStoryScriptResponseDTO getSampleScript(String sampleTag){
         Script script = scriptRepository.findByScriptFile(sampleTag).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-        return script;
+        return ScriptDTO.EntityToDTO(script);
     }
+
 
 
     // 스크립트 결과 DB 저장
@@ -39,7 +42,7 @@ public class ScriptService {
     /*
     public Mono<Script> saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
-        //Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertStoryBord(changeNovel);
         return novelToStoryScriptResponseDTOMono
@@ -54,7 +57,7 @@ public class ScriptService {
     /*
     public Script saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
-        //Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // WebClient 호출을 동기식으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
@@ -73,7 +76,7 @@ public class ScriptService {
 
     public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
-        Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // 웹 클라이언트 호출을 동기적으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();

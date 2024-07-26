@@ -50,6 +50,8 @@ dependencies {
 	testRuntimeOnly 'com.h2database:h2'
 	//Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	//Jackson에 jackson-datatype-jsr310 모듈 추가(LocalDateTime)
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
 
 }
 
