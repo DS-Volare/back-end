@@ -24,6 +24,8 @@ public class Novel extends BaseEntity {
 
     @Column(name = "story_text", columnDefinition = "TEXT", nullable = false)
     private String storyText;
+
+    // TODO: 스토리보드 이미지 중 1개 - 선별 기준 확인
     private String Image;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
