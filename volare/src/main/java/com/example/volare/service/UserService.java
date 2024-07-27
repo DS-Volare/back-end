@@ -1,5 +1,7 @@
 package com.example.volare.service;
 
+import com.example.volare.global.common.auth.AuthRedisService;
+import com.example.volare.model.User;
 import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -8,11 +10,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final AuthRedisService authRedisService;
 
-//    public void signOut(User user, String refreshToken) {
-//        jwtService.matchCheckTokens(user.getUserId(), refreshToken);
-//        userRepository.deleteValues(refreshToken);
-//    }
+    public void signOut(User user, String refreshToken) {
+        authRedisService.deleteValues(refreshToken);
+    }
 
 }

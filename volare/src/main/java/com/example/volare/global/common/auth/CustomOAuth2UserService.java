@@ -1,6 +1,7 @@
 package com.example.volare.global.common.auth;
 
 import com.example.volare.global.common.auth.model.TokenDTO;
+import com.example.volare.global.common.config.JwtConfig;
 import com.example.volare.model.User;
 import com.example.volare.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +26,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final HttpSession httpSession;
-    private final HttpServletResponse httpServletResponse;
+    private final AuthRedisService authRedisService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -59,19 +60,21 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         } else {
             // 가입되지 않은 사용자 => User 엔티티 생성 후 저장
 
-            // 토큰 생성 및 세션에 저장
-            String userUUID = String.valueOf(attributes.getEmail());
-            TokenDTO tokens = jwtService.createToken(userUUID);
+            // 토큰 생성
+            String email = String.valueOf(attributes.getEmail());
+            TokenDTO tokens = jwtService.createToken(email);
+
+            //세션에 저장
             httpSession.setAttribute("accessToken", tokens.getAccessToken());
             httpSession.setAttribute("refreshToken", tokens.getRefreshToken());
 
-            //Todo: 저장 장소 변경 리팩토링
-
+            //access-token 및 refresh-token 저장
+            authRedisService.setValuesWithTimeout(tokens.getRefreshToken(), String.valueOf((attributes.getEmail())), JwtConfig.REFRESH_TOKEN_VALID_TIME);
             User newUser = User.builder()
                     .email(attributes.getEmail())
                     .picture(attributes.getPicture())
-                    .accessToken(tokens.getAccessToken())
-                    .refreshToken(tokens.getRefreshToken())
+                    //.accessToken(tokens.getAccessToken())
+                    //.refreshToken(tokens.getRefreshToken())
                     .socialType(provider)
                     .build();
             return userRepository.save(newUser);

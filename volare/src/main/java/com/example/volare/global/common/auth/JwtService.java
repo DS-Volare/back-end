@@ -28,9 +28,7 @@ public class JwtService implements InitializingBean {
     private static final String email = "usermail";
     private static SecretKey secretKey;
     private final UserDetailService userDetailService;
-
-    private final UserRepository userRepository;
-
+    private final AuthRedisService authRedisService;
 
     @Override
     public void afterPropertiesSet(){
@@ -96,44 +94,39 @@ public class JwtService implements InitializingBean {
     }
 
     public Authentication getAuthentication(String token) {
-        String uuid = (String) getClaims(token).get(email);
-        UserDetails user = userDetailService.loadUserByUsername(uuid);
+        String userEmail = (String) getClaims(token).get(email);
+        UserDetails user = userDetailService.loadUserByUsername(userEmail);
         return new UsernamePasswordAuthenticationToken(user, "", user.getAuthorities());
     }
 
     @Transactional
     public TokenDTO reissueToken(String accessToken, String refreshToken) {
-        String accessUuid = null;
+        String accessEmail = null;
 
         try {
-            accessUuid = (String) getClaims(accessToken).get(email);
+            // accessToken 만료 전, refreshToken 요청이 오면 토큰 정보 탈취 위험성이 있어, 모든 토큰 재발급
+            accessEmail = (String) getClaims(accessToken).get(email);
         } catch (ExpiredJwtException e) {
-            accessUuid = String.valueOf(e.getClaims().get(email));
+            accessEmail = String.valueOf(e.getClaims().get(email));
         }
 
         try {
             getClaims(refreshToken);
 
             // Redis 사용 시에는 refreshToken 유효 기간 검증 필요 없음 -> 시간이 지난 후 삭제됨
-            User user = userRepository.findByRefreshToken(refreshToken)
+            String value = authRedisService.getValues(refreshToken)
                     .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-
-            String value =user.getRefreshToken();
-            if(!value.equals(accessUuid)) {
+            if(!value.equals(accessEmail)) {
                 throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
             }
 
             // 기존 refresh token 삭제 후 재생성
-           //  redisService.deleteValues(refreshToken);
-            TokenDTO newTokens = createAndSaveTokens(user.getEmail());
+            authRedisService.deleteValues(refreshToken);
+            TokenDTO newTokens = createAndSaveTokens(value);
 
             return newTokens;
         } catch (ExpiredJwtException e) {
             throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
         }
-    }
-
-    public void matchCheckTokens(String refreshToken) {
-        // accessToken 만료 전, refreshToken 요청이 오면, 저장된 accessToken 요청온 accessToken을 비교하기
     }
 }
