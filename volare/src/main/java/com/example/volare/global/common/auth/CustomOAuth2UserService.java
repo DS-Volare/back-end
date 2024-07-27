@@ -54,15 +54,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
 
         if (existingUser.isPresent()) {
-            // 이미 가입된 사용자인 경우 리프레시 토큰 비교
-            // 로그인 토큰 값 전달
-            // 응답 설정
-            httpServletResponse.setCharacterEncoding("utf-8");
-            httpServletResponse.setHeader("X-AUTH-TOKEN", existingUser.get().getAccessToken());
-            httpServletResponse.setHeader("refresh-token", existingUser.get().getRefreshToken());
-            httpServletResponse.setContentType("application/json");
-
-
+            // 이미 가입된 사용자인 경우 => 로그아웃 전, 로그인 재요청-> 에러 or 토큰 발급
             return null;
         } else {
             // 가입되지 않은 사용자 => User 엔티티 생성 후 저장

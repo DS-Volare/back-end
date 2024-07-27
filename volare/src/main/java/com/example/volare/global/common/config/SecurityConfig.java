@@ -1,11 +1,9 @@
 package com.example.volare.global.common.config;
 
-import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.common.auth.CustomAuthenticationSuccessHandler;
 import com.example.volare.global.common.auth.CustomOAuth2UserService;
 import com.example.volare.global.common.auth.JwtAuthenticationFilter;
 import com.example.volare.global.common.auth.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -45,10 +42,10 @@ public class SecurityConfig {
                         .requestMatchers("/", "/css/**", "images/**", "/js/**", "/oauth/**", "/logout/*", "/websocket/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(exceptionHandling ->
-                        exceptionHandling
-                                .authenticationEntryPoint(customAuthenticationEntryPoint())
-                )
+//                .exceptionHandling(exceptionHandling ->
+//                        exceptionHandling
+//                                .authenticationEntryPoint(customAuthenticationEntryPoint())
+//                )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth // OAuth2 로그인 설정
                         .authorizationEndpoint(authorization ->
@@ -62,17 +59,17 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
-        return (request, response, authException) -> {
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            String jsonResponse = String.format("{\"error\": {\"code\": \"%s\", \"message\": \"%s\"}}",
-                    ErrorStatus._UNAUTHORIZED.getCode(), ErrorStatus._UNAUTHORIZED.getMessage());
-
-            response.getWriter().write(jsonResponse);
-        };
-    }
+//    @Bean
+//    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+//        return (request, response, authException) -> {
+//            response.setContentType("application/json");
+//            response.setCharacterEncoding("UTF-8");
+//            String jsonResponse = String.format("{\"error\": {\"code\": \"%s\", \"message\": \"%s\"}}",
+//                    ErrorStatus._UNAUTHORIZED.getCode(), ErrorStatus._UNAUTHORIZED.getMessage());
+//
+//            response.getWriter().write(jsonResponse);
+//        };
+//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

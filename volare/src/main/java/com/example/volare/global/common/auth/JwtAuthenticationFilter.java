@@ -22,19 +22,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader("X-AUTH-TOKEN");
 
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         try {
             if(token != null && jwtService.checkValidationToken(token)) {
                 Authentication authentication = jwtService.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             filterChain.doFilter(request, response);
-        } catch (ExpiredJwtException e) {
-            System.out.println("Catch at JwtAuthenticationFilter");
-            response.sendError(403, "Access token이 만료되었습니다.");
+        }  catch (ExpiredJwtException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Access token이 만료되었습니다\"}");
         } catch (UsernameNotFoundException e) {
-            response.sendError(404, "유저를 찾을 수 없습니다.");
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("{\"error\": \"유저를 찾을 수 없습니다.\"}");
         } catch (Exception e) {
-            response.sendError(401, "유효하지 않은 토큰입니다");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"유효하지 않은 토큰입니다\"}");
         }
     }
 }
