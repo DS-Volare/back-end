@@ -2,14 +2,12 @@ package com.example.volare.controller;
 
 import com.example.volare.global.apiPayload.ApiResponse;
 import com.example.volare.global.common.auth.JwtService;
-import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.global.common.auth.model.TokenDTO;
 import com.example.volare.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,9 +23,9 @@ public class UserController {
 
     // 로그아웃
     @PostMapping("/sign-out")
-    public ApiResponse<?> signOut(@AuthenticationPrincipal AuthUser authUser,
+    public ApiResponse<?> signOut(@RequestHeader("X-AUTH-TOKEN") String accessToken,
                                   @RequestHeader("refresh-Token") String refreshToken) {
-        userService.signOut(authUser.getUser(), refreshToken);
+        userService.signOut(accessToken, refreshToken);
         return ApiResponse.onSuccess("");
     }
 

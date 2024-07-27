@@ -25,4 +25,8 @@ public class AuthRedisService {
     public void deleteValues(String key) {
         redisTemplate.delete(key);
     }
+
+    public RedisTemplate<String, String> getRedisTemplate() {
+        return redisTemplate;
+    }
 }

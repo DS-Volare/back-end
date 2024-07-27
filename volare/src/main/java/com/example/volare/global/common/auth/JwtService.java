@@ -4,14 +4,13 @@ import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.global.common.auth.model.TokenDTO;
 import com.example.volare.global.common.config.JwtConfig;
-import com.example.volare.model.User;
-import com.example.volare.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -84,6 +83,11 @@ public class JwtService implements InitializingBean {
             Date expiration = claims.getExpiration();
             if (expiration.before(new Date())) {
                 throw new ExpiredJwtException(null, null, "Token has expired");
+            }
+            // 블랙리스트를 통해 로그아웃 후 기존 토큰 탈취를 통한 접근을 방지
+            ValueOperations<String, String> logoutValueOperations = authRedisService.getRedisTemplate().opsForValue();
+            if (logoutValueOperations.get("blackList"+token) != null) {
+                return false;
             }
             return true;
         } catch (ExpiredJwtException e) {

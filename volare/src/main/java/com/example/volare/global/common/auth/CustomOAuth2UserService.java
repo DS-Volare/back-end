@@ -4,7 +4,6 @@ import com.example.volare.global.common.auth.model.TokenDTO;
 import com.example.volare.global.common.config.JwtConfig;
 import com.example.volare.model.User;
 import com.example.volare.repository.UserRepository;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,7 +42,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         OAuthAttributes attributes = OAuthAttributes.of(provider, userNameAttribute, oAuth2User.getAttributes());
 
-        User user = saveUser(attributes,provider);
+        saveUser(attributes,provider);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
@@ -51,34 +50,38 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 attributes.getNameAttributeKey());
     }
 
-    private User saveUser(OAuthAttributes attributes, User.SocialType provider) {
+    private void saveUser(OAuthAttributes attributes, User.SocialType provider) {
         Optional<User> existingUser = userRepository.findByEmail(attributes.getEmail());
 
         if (existingUser.isPresent()) {
-            // 이미 가입된 사용자인 경우 => 로그아웃 전, 로그인 재요청-> 에러 or 토큰 발급
-            return null;
+            // 이미 가입된 사용자인 경우
+            //case1) 로그아웃으로 refreshToken인 없는 상태 -> 토큰 재발급 필요함 == 기존 회원 로그인 시도(정상 요청)
+            saveToken(attributes.getEmail());
+               //case2) 논리적 유저 플로우 불가능 상황 : 로그아웃 전(이미 로그인 상태)에서 로그인 시도 -> 에러 발생 필요 (비정상 요청)
+               //case3) 개발자 accessToken 확인을 위한 비정상적인 루트로 접근한 경우(비정상 요청)
+
         } else {
             // 가입되지 않은 사용자 => User 엔티티 생성 후 저장
-
-            // 토큰 생성
-            String email = String.valueOf(attributes.getEmail());
-            TokenDTO tokens = jwtService.createToken(email);
-
-            //세션에 저장
-            httpSession.setAttribute("accessToken", tokens.getAccessToken());
-            httpSession.setAttribute("refreshToken", tokens.getRefreshToken());
-
-            //access-token 및 refresh-token 저장
-            authRedisService.setValuesWithTimeout(tokens.getRefreshToken(), String.valueOf((attributes.getEmail())), JwtConfig.REFRESH_TOKEN_VALID_TIME);
+            saveToken(attributes.getEmail());
             User newUser = User.builder()
                     .email(attributes.getEmail())
                     .picture(attributes.getPicture())
-                    //.accessToken(tokens.getAccessToken())
-                    //.refreshToken(tokens.getRefreshToken())
                     .socialType(provider)
                     .build();
-            return userRepository.save(newUser);
+            userRepository.save(newUser);
         }
+    }
+
+    private void saveToken(String email){
+        // 토큰 생성
+        TokenDTO tokens = jwtService.createToken(email);
+
+        //세션에 저장
+        httpSession.setAttribute("accessToken", tokens.getAccessToken());
+        httpSession.setAttribute("refreshToken", tokens.getRefreshToken());
+
+        //access-token 및 refresh-token 저장
+        authRedisService.setValuesWithTimeout(tokens.getRefreshToken(), String.valueOf(email), JwtConfig.REFRESH_TOKEN_VALID_TIME);
 
     }
 }
