@@ -19,7 +19,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PACKAGE)
-@Table(name = "story_scripts")
+@Table(name = "scripts")
 public class Script extends BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -34,29 +34,19 @@ public class Script extends BaseEntity {
     private String scriptFile;
 
     @ElementCollection
-    @CollectionTable(name = "story_script_characters", joinColumns = @JoinColumn(name = "script_id"))
+    @CollectionTable(name = "script_characters", joinColumns = @JoinColumn(name = "script_id"))
     @Column(name = "character")
     private List<String> characters;
 
-    //TODO: 대본 하나당 단일 값인지 확인
-    private String locates; // 장소
-    private int sceneNum;
-    private String time; // 시간
 
-    @ElementCollection
-    @CollectionTable(name = "story_script_contents", joinColumns = @JoinColumn(name = "script_id"))
-    private List<Content> contents; // ContentEntity 객체 리스트
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "script_id") // 단방향 설정
+    private List<ScriptScene> scriptScenes;
 
-    @Embeddable
-    @Getter
-    @Builder
-    @NoArgsConstructor(access = PROTECTED)
-    @AllArgsConstructor
-    public static class Content{
-        private String action; // 비대사
-        private String character; //발화자
-        private String dialog; // 대사
-    }
+    /* 차후 필요성에 따라 양방향 변경
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "script")
+    private List<ScriptScene> scriptScenes;
+     */
 }
 
 

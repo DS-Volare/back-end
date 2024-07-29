@@ -1,16 +1,18 @@
 package com.example.volare.service;
 
+
 import com.example.volare.dto.ScriptDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
-import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
+import com.example.volare.model.ScriptScene;
 import com.example.volare.model.User;
 import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -25,15 +27,24 @@ public class ScriptService {
     private final NovelRepository novelRepository;
     private final ScriptRepository scriptRepository;
 
+    // SAMPLE 조회
+    @Cacheable(cacheNames = "SAMPLE_SCRIPTS" , key = "#sampleTag")
+    public ScriptDTO.NovelToStoryScriptResponseDTO getSampleScript(String sampleTag){
+        Script script = scriptRepository.findByScriptFile(sampleTag).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return ScriptDTO.EntityToDTO(script);
+    }
+
+
 
     // 스크립트 결과 DB 저장
 
     //TODO: 속도 테스트를 위함(1) ->비동기 호출 비동기 저장- 완료 후 return
     /*
-    public Mono<Script> saveStoryScript(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public Mono<Script> saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+        // Novel
+        //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertStoryBord(changeNovel);
-        log.info(novelToStoryScriptResponseDTOMono.toString());
         return novelToStoryScriptResponseDTOMono
                 .map(this::convertToEntity)
                 .flatMap(entity -> Mono.fromCallable(() -> scriptRepository.save(entity))
@@ -44,7 +55,10 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(2) -> 동기식 저장 , 동기식 호출
     /*
-    public Script saveStoryScript(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public Script saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+        // Novel
+        //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+
         // WebClient 호출을 동기식으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
 
@@ -59,47 +73,56 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
     public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
-        // User 검증 로직
-
+        // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
         // Novel
-        Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // 웹 클라이언트 호출을 동기적으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();
 
         // 비동기적으로 저장 로직 수행
         Mono.fromCallable(() -> {
-                    Script entity = convertToEntity(novel,responseDTO);
+                    //log.info("DB save task started");
+                    Script entity = convertToEntity(responseDTO);
                     scriptRepository.save(entity);
+                    //log.info("DB save task completed");
                     return entity;
                 })
                 .subscribeOn(Schedulers.boundedElastic()) // 비동기 실행
                 .subscribe();
 
+        //log.info("Returning responseDTO");
         // 스크립트 결과 FE 반환
         return responseDTO;
     }
 
-    //
-    public Script convertToEntity(Novel novel, ScriptDTO.NovelToStoryScriptResponseDTO storyScript){
 
+
+    //
+    private Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO responseDTO ) {
         Script script = Script.builder()
-                .novel(novel)
-                .scriptFile(storyScript.getScript_str()) // script_str을 scriptFile에 설정
-                .locates(storyScript.getScript().getScene().get(0).getLocation()) // location을 locates에 설정
-                .sceneNum(storyScript.getScript().getScene().get(0).getScene_num()) // sceneNum을 sceneNum에 설정
-                .time(storyScript.getScript().getScene().get(0).getTime()) // time을 time에 설정
-                .contents(storyScript.getScript().getScene().get(0).getContent().stream()
-                        .map(content -> Script.Content.builder()
-                                .action(content.getAction())
-                                .character(content.getCharacter())
-                                .dialog(content.getDialog())
+                .scriptFile(responseDTO.getScript_str())
+                .scriptScenes(responseDTO.getScript().getScene().stream()
+                        .map(sceneDTO -> ScriptScene.builder()
+                                .locates(sceneDTO.getLocation())
+                                .sceneNum(sceneDTO.getScene_num())
+                                .time(sceneDTO.getTime())
+                                .contents(sceneDTO.getContent().stream()
+                                        .map(content ->  ScriptScene.Content.builder()
+                                                        .action(content.getAction())
+                                                        .character(content.getCharacter())
+                                                        .dialog(content.getDialog())
+                                                        .build()
+                                        )
+                                        .collect(Collectors.toList())
+                                )
                                 .build()
                         )
                         .collect(Collectors.toList())
                 )
                 .build();
-        return  script;
+
+        return script;
     }
 
 }
