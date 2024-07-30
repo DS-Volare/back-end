@@ -49,6 +49,9 @@ spring:
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
+    password: volare
+server:
+  port: 8080
 
 
 logging:
