@@ -19,8 +19,8 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PACKAGE)
-@Table(name = "story_scripts")
-public class StoryScript extends BaseEntity {
+@Table(name = "scripts")
+public class Script extends BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "script_id")
@@ -28,15 +28,25 @@ public class StoryScript extends BaseEntity {
 
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "novel_id")
-    private Novel novel;
-    private String line;
-    private String noLine;
+    private Novel novel; // 소설 외래키
+
+    @Column(name = "script_file", columnDefinition = "TEXT", nullable = false)
+    private String scriptFile;
+
     @ElementCollection
-    @CollectionTable(name = "story_script_characters", joinColumns = @JoinColumn(name = "script_id"))
+    @CollectionTable(name = "script_characters", joinColumns = @JoinColumn(name = "script_id"))
     @Column(name = "character")
     private List<String> characters;
-    private String locates;
-    private String time;
+
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "script_id") // 단방향 설정
+    private List<ScriptScene> scriptScenes;
+
+    /* 차후 필요성에 따라 양방향 변경
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "script")
+    private List<ScriptScene> scriptScenes;
+     */
 }
 
 

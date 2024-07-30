@@ -23,7 +23,7 @@ public class StoryBoard extends BaseEntity {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "script_id")
-    private StoryScript storyScript;
+    private Script script;
 
     private String sceneNum;
     private String locate;
