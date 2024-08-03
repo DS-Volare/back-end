@@ -13,6 +13,7 @@ import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Objects;
@@ -20,13 +21,15 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class MessageService {
+    private final WebClientService webClientService;
+
     private final MessageRepository messageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
 
     // 메시지 DB 저장
     @Transactional
-    public MessageDTO.MessageResponseDto saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
+    public void saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
 
         // 채팅방 유효성 검사
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -38,8 +41,22 @@ public class MessageService {
                 .build();
         MessageEntity chat = messageRepository.save(saveMessage);
 
+    }
+
+    // GPT 메세지 호출
+    public MessageDTO.MessageResponseDto sendGPTMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
+        // 채팅방 유효성 검사
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        MessageDTO.MessageGPTRequestDto messageGPTRequestDto = MessageDTO.MessageGPTRequestDto
+                .builder().message(message.getMessage()).context(chatRoom.getScript().getNovel().getStoryText()).build();
+
+        // webclient 비동기 호출
+        MessageDTO.MessageGPTResponseDto responseGPT = webClientService.responseGPT(messageGPTRequestDto).block();
+        MessageEntity messageEntity = MessageDTO.fromDto(responseGPT, chatRoom, MessageEntity.MessageType.GPT);
+        messageRepository.save(messageEntity);
+
         // STOMP 프로토콜을 사용하여 해당 채팅방의 구독자들에게 전송
-        return MessageDTO.fromEntity(chat);
+        return MessageDTO.fromEntity(messageEntity);
     }
 
     public ChatRoomDTO.ChatRoomAllMessageResponseDto getChatRoomMessages(User user,String chatRoomId){

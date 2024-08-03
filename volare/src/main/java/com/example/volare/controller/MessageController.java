@@ -24,12 +24,16 @@ public class MessageController {
 
 
     //메시지 송신 및 수신, /pub가 생략된 모습. 클라이언트 단에선 /pub/chatRoom/{chatRoomId}로 요청
-    @MessageMapping("/chatRoom/{chatRoomId}")
+    @MessageMapping("/chats/{chatRoomId}")
     public void sendMessage(@DestinationVariable("chatRoomId") String chatRoomId,
-                            @Valid @RequestBody MessageDTO.MessageRequestDto message) {
-        // Log the received message
-        System.out.println("Received message: " + message);
-        template.convertAndSend("/sub/chatRoom/" + chatRoomId, messageService.saveMessage(chatRoomId, message));
+                            @Valid @RequestBody MessageDTO.MessageRequestDto question) {
+        // flask 연결
+        MessageDTO.MessageResponseDto answer = messageService.sendGPTMessage(chatRoomId, question);
+
+        // webclient 비동기 통신 중, 저장 활성화 가능
+        messageService.saveMessage(chatRoomId, question);
+
+        template.convertAndSend("/sub/chatRoom/" + chatRoomId,answer);
     }
 
     // 채팅 내역 조회
