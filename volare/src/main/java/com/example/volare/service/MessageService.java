@@ -11,6 +11,7 @@ import com.example.volare.repository.ChatRoomRepository;
 import com.example.volare.repository.MessageRepository;
 import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -18,6 +19,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageService {
@@ -30,33 +32,51 @@ public class MessageService {
     // 메시지 DB 저장
     @Transactional
     public void saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
-
+        log.info("Finding chat room - save");
         // 채팅방 유효성 검사
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-
         MessageEntity saveMessage = MessageEntity.builder()
                 .message(message.getMessage())
                 .chatRoom(chatRoom)
                 .messagetype(Objects.equals(message.getMessageType(), MessageEntity.MessageType.QUESTION.name()) ? MessageEntity.MessageType.QUESTION : MessageEntity.MessageType.GPT)
                 .build();
-        MessageEntity chat = messageRepository.save(saveMessage);
+        messageRepository.save(saveMessage);
 
     }
 
     // GPT 메세지 호출
-    public MessageDTO.MessageResponseDto sendGPTMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
-        // 채팅방 유효성 검사
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-        MessageDTO.MessageGPTRequestDto messageGPTRequestDto = MessageDTO.MessageGPTRequestDto
-                .builder().message(message.getMessage()).context(chatRoom.getScript().getNovel().getStoryText()).build();
+    @Transactional
+    public Mono<MessageDTO.MessageResponseDto> sendGPTMessage(String chatRoomId, MessageDTO.MessageRequestDto message) {
+        // 채팅방 유효성 검사 및 WebClient 비동기 호출
+        return Mono.fromCallable(() -> {
+            log.info("Finding chat room with ID");
+            return chatRoomRepository.findById(chatRoomId)
+                    .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        })        .flatMap(chatRoom -> {
 
-        // webclient 비동기 호출
-        MessageDTO.MessageGPTResponseDto responseGPT = webClientService.responseGPT(messageGPTRequestDto).block();
-        MessageEntity messageEntity = MessageDTO.fromDto(responseGPT, chatRoom, MessageEntity.MessageType.GPT);
-        messageRepository.save(messageEntity);
+            log.info("Chat room found");
 
-        // STOMP 프로토콜을 사용하여 해당 채팅방의 구독자들에게 전송
-        return MessageDTO.fromEntity(messageEntity);
+                    // GPT 요청 DTO 생성
+                    MessageDTO.MessageGPTRequestDto messageGPTRequestDto = MessageDTO.MessageGPTRequestDto
+                            .builder()
+                            .message(message.getMessage())
+                            .context(chatRoomRepository.findStoryTextByChatRoomId(chatRoomId))
+                            .build();
+
+            log.info("Calling GPT with request");
+
+                    // WebClient 비동기 호출
+                    return webClientService.responseGPT(messageGPTRequestDto)
+                            .flatMap(responseGPT -> {
+                                log.info("Received GPT response");
+                                // 메시지 엔티티 생성
+                                MessageEntity messageEntity = MessageDTO.fromDto(responseGPT, chatRoom, MessageEntity.MessageType.GPT);
+
+                                /// 메시지 저장 후 저장된 메시지 엔티티 반환
+                                return Mono.fromCallable(() -> messageRepository.save(messageEntity))
+                                        .map(MessageDTO::fromEntity); // 저장된 메시지 엔티티로부터 DTO 반환
+                            });
+                });
     }
 
     public ChatRoomDTO.ChatRoomAllMessageResponseDto getChatRoomMessages(User user,String chatRoomId){

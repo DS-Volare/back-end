@@ -45,7 +45,7 @@ public class WebClientService {
     public Mono<MessageDTO.MessageGPTResponseDto> responseGPT(MessageDTO.MessageGPTRequestDto question){
         return this.webClient.post()
                 .uri("/chatbot")
-                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(question)
                 .retrieve()
                 .bodyToMono(MessageDTO.MessageGPTResponseDto.class)

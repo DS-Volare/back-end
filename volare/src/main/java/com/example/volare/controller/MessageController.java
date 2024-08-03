@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @RestController
@@ -27,13 +28,16 @@ public class MessageController {
     @MessageMapping("/chats/{chatRoomId}")
     public void sendMessage(@DestinationVariable("chatRoomId") String chatRoomId,
                             @Valid @RequestBody MessageDTO.MessageRequestDto question) {
-        // flask 연결
-        MessageDTO.MessageResponseDto answer = messageService.sendGPTMessage(chatRoomId, question);
 
-        // webclient 비동기 통신 중, 저장 활성화 가능
+        // TODO: 병렬처리: sendGPTMessage 비동기 통신 중, saveMessage 저장
+        // flask 연결- 비동기적으로 GPT 메시지 호출
+        Mono<MessageDTO.MessageResponseDto> responseMono = messageService.sendGPTMessage(chatRoomId, question);
+
         messageService.saveMessage(chatRoomId, question);
 
-        template.convertAndSend("/sub/chatRoom/" + chatRoomId,answer);
+        responseMono.subscribe(answer -> {
+            template.convertAndSend("/sub/chats/" + chatRoomId, answer);
+        });
     }
 
     // 채팅 내역 조회
