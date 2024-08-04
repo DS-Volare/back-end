@@ -46,6 +46,13 @@ spring:
   cache:
     type: redis
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cache:
+    type: redis
+
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
