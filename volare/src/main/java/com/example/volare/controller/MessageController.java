@@ -33,11 +33,10 @@ public class MessageController {
         // flask 연결- 비동기적으로 GPT 메시지 호출
         Mono<MessageDTO.MessageResponseDto> responseMono = messageService.sendGPTMessage(chatRoomId, question);
 
-        messageService.saveMessage(chatRoomId, question);
+        MessageDTO.MessageResponseDto userQuestion = messageService.saveMessage(chatRoomId, question);
+        template.convertAndSend("/sub/chats/" + chatRoomId, userQuestion);
 
-        responseMono.subscribe(answer -> {
-            template.convertAndSend("/sub/chats/" + chatRoomId, answer);
-        });
+        responseMono.subscribe(gptAnswer -> template.convertAndSend("/sub/chats/" + chatRoomId, gptAnswer));
     }
 
     // 채팅 내역 조회

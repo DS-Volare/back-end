@@ -31,17 +31,17 @@ public class MessageService {
 
     // 메시지 DB 저장
     @Transactional
-    public void saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
+    public MessageDTO.MessageResponseDto saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
         log.info("Finding chat room - save");
         // 채팅방 유효성 검사
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
         MessageEntity saveMessage = MessageEntity.builder()
                 .message(message.getMessage())
-                .chatRoom(chatRoom)
+                .chatRoomId(chatRoom.getId())
                 .messagetype(Objects.equals(message.getMessageType(), MessageEntity.MessageType.QUESTION.name()) ? MessageEntity.MessageType.QUESTION : MessageEntity.MessageType.GPT)
                 .build();
-        messageRepository.save(saveMessage);
-
+        MessageEntity chat = messageRepository.save(saveMessage);
+        return MessageDTO.fromEntity(chat);
     }
 
     // GPT 메세지 호출
@@ -88,7 +88,7 @@ public class MessageService {
         if(!chatRoom.getUser().getId().equals(chatRoomUser.getId())){
             throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
         }
-        List<MessageEntity> messageEntityList = messageRepository.searchByChatRoom(chatRoom);
+        List<MessageEntity> messageEntityList = messageRepository.findByChatRoomId(chatRoom.getId());
         List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).toList();
         return ChatRoomDTO.ChatRoomAllMessageResponseDto.builder().chatRoomId(chatRoomId).allMessages(messageResponseDtos).build();
     }

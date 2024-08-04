@@ -61,7 +61,7 @@ public class MessageDTO {
     public static MessageEntity fromDto(MessageGPTResponseDto message, ChatRoomEntity chatRoom, MessageEntity.MessageType messageType){
         return MessageEntity.builder()
                 .message(message.getAnswer())
-                .chatRoom(chatRoom)
+                .chatRoomId(chatRoom.getId())
                 .messagetype(messageType)
                 .build();
     }
