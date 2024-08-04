@@ -33,6 +33,8 @@ public class Script extends BaseEntity {
     @Column(name = "script_file", columnDefinition = "TEXT", nullable = false)
     private String scriptFile;
 
+    private String type; // 생픔용 type
+
     @ElementCollection
     @CollectionTable(name = "script_characters", joinColumns = @JoinColumn(name = "script_id"))
     @Column(name = "character")

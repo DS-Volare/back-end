@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,9 +28,9 @@ public class ScriptService {
 
     // SAMPLE 조회
     @Cacheable(cacheNames = "SAMPLE_SCRIPTS" , key = "#sampleTag")
-    public ScriptDTO.NovelToStoryScriptResponseDTO getSampleScript(String sampleTag){
-        Script script = scriptRepository.findByScriptFile(sampleTag).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-        return ScriptDTO.EntityToDTO(script);
+    public ScriptDTO.SampleScriptResponseDTO getSampleScript(String sampleTag){
+        Script script = scriptRepository.findByType(sampleTag).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return new ScriptDTO.SampleScriptResponseDTO(script.getScriptFile());
     }
 
 
@@ -83,7 +82,7 @@ public class ScriptService {
         // 비동기적으로 저장 로직 수행
         Mono.fromCallable(() -> {
                     //log.info("DB save task started");
-                    Script entity = convertToEntity(responseDTO);
+                    Script entity = ScriptDTO.convertToEntity(responseDTO);
                     scriptRepository.save(entity);
                     //log.info("DB save task completed");
                     return entity;
@@ -96,33 +95,5 @@ public class ScriptService {
         return responseDTO;
     }
 
-
-
-    //
-    private Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO responseDTO ) {
-        Script script = Script.builder()
-                .scriptFile(responseDTO.getScript_str())
-                .scriptScenes(responseDTO.getScript().getScene().stream()
-                        .map(sceneDTO -> ScriptScene.builder()
-                                .locates(sceneDTO.getLocation())
-                                .sceneNum(sceneDTO.getScene_num())
-                                .time(sceneDTO.getTime())
-                                .contents(sceneDTO.getContent().stream()
-                                        .map(content ->  ScriptScene.Content.builder()
-                                                        .action(content.getAction())
-                                                        .character(content.getCharacter())
-                                                        .dialog(content.getDialog())
-                                                        .build()
-                                        )
-                                        .collect(Collectors.toList())
-                                )
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                .build();
-
-        return script;
-    }
 
 }
