@@ -1,25 +1,45 @@
 package com.example.volare.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
-
 import com.example.volare.model.Script;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.example.volare.model.ScriptScene;
+import lombok.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
- @Data
- @NoArgsConstructor
- @AllArgsConstructor
+
 public class ScriptDTO {
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+     public static class ModifyScriptDTO{
+
+        private List<SceneDTO> scene;
+
+         @Data
+         @NoArgsConstructor
+         @AllArgsConstructor
+         public static class SceneDTO {
+             private int scene_num;
+             private String location;
+             private String time;
+             private List<ContentDTO> content;
+         }
+
+         @Data
+         @NoArgsConstructor
+         @AllArgsConstructor
+         public static class ContentDTO {
+             private String character;
+             private String action;
+             private String dialog;
+             private String type;
+         }
+     }
+
+
 
      @Getter
      public static class ScriptRequestDTO {
@@ -27,6 +47,7 @@ public class ScriptDTO {
          private String text;
      }
 
+// RESPONSE
 
      @Builder
      @AllArgsConstructor
@@ -69,7 +90,16 @@ public class ScriptDTO {
          }
      }
 
-     //CONVERTER
+     @NoArgsConstructor
+     @AllArgsConstructor
+     @Getter
+     public static class SampleScriptResponseDTO{
+         private String sampleScript;
+     }
+
+
+
+//CONVERTER
      public static NovelToStoryScriptResponseDTO EntityToDTO(Script scriptEntity) {
          return ScriptDTO.NovelToStoryScriptResponseDTO.builder()
                  .script(ScriptDTO.NovelToStoryScriptResponseDTO.Script.builder()
@@ -97,27 +127,32 @@ public class ScriptDTO {
                  .build();
      }
 
+     public static Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO responseDTO ) {
+         Script script = Script.builder()
+                 .scriptFile(responseDTO.getScript_str())
+                 .scriptScenes(responseDTO.getScript().getScene().stream()
+                         .map(sceneDTO -> ScriptScene.builder()
+                                 .locates(sceneDTO.getLocation())
+                                 .sceneNum(sceneDTO.getScene_num())
+                                 .time(sceneDTO.getTime())
+                                 .contents(sceneDTO.getContent().stream()
+                                         .map(content ->  ScriptScene.Content.builder()
+                                                 .action(content.getAction())
+                                                 .character(content.getCharacter())
+                                                 .dialog(content.getDialog())
+                                                 .build()
+                                         )
+                                         .collect(Collectors.toList())
+                                 )
+                                 .build()
+                         )
+                         .collect(Collectors.toList())
+                 )
+                 .build();
 
-     private List<SceneDTO> scene;
-
-     @Data
-     @NoArgsConstructor
-     @AllArgsConstructor
-     public static class SceneDTO {
-         private int scene_num;
-         private String location;
-         private String time;
-         private List<ContentDTO> content;
+         return script;
      }
 
-     @Data
-     @NoArgsConstructor
-     @AllArgsConstructor
-     public static class ContentDTO {
-         private String character;
-         private String action;
-         private String dialog;
-         private String type;
-     }
+
  }
 

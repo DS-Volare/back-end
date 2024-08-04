@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/websocket/**","/websocket/pub/**,/websocket/sub/**","/testFE");
+        return web -> web.ignoring().requestMatchers("/websocket/**","/websocket/pub/**,/websocket/sub/**","/scripts/sample/**");
     }
 
 
