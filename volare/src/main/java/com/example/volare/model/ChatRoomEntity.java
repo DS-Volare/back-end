@@ -8,9 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static jakarta.persistence.FetchType.LAZY;
 
 @Data
@@ -26,9 +23,6 @@ public class ChatRoomEntity extends BaseEntity {
     @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    // 다대일 관계: 여러 개의 메시지가 하나의 채팅방에 속함
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
-    private List<MessageEntity> messages = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY) // 1
     @JoinColumn(name = "user_id", referencedColumnName = "id") // 2
