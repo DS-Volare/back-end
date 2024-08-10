@@ -1,5 +1,6 @@
 package com.example.volare.controller;
 
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -7,9 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
+@Slf4j
 @RestController
 @RequestMapping("/scripts")
 public class ScriptController {
+    private final ScriptService scriptService;
 
     @PutMapping("/{scriptId}/update")
     public ResponseEntity<Map<String, Object>> updateScript(
@@ -44,6 +48,7 @@ public class ScriptController {
                 }
                 if (action != null) {
                     item.put("action", action);
+
                 }
                 if (dialog != null) {
                     item.put("dialog", dialog);

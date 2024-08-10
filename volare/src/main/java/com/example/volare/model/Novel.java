@@ -20,8 +20,9 @@ public class Novel extends BaseEntity {
     @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "novel_id")
     private String Id;
-    private String title;
-    private String storyFile;
+    private String title; // 소설 제목
+
+    @Column(name = "story_text", columnDefinition = "TEXT", nullable = false)
     private String storyText;
     private String Image;
     @ManyToOne(fetch = FetchType.LAZY)
