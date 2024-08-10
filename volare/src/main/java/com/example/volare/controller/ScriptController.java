@@ -1,43 +1,56 @@
 package com.example.volare.controller;
 
-import com.example.volare.dto.ScriptDTO;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/scripts")
 public class ScriptController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScriptController.class);
+    @PutMapping("/{scriptId}/update")
+    public ResponseEntity<Map<String, Object>> updateScript(
+            @PathVariable Long scriptId,
+            @RequestParam int sceneNumber,
+            @RequestParam int contentIndex,
+            @RequestParam(required = false) String character,
+            @RequestParam(required = false) String action,
+            @RequestParam(required = false) String dialog,
+            @RequestBody Map<String, Object> requestBody) {
 
-    @PutMapping("/update-dialog")
-    public ScriptDTO updateDialog(@RequestBody ScriptDTO scriptDTO,
-                                  @RequestParam int sceneNumber,
-                                  @RequestParam String character,
-                                  @RequestParam String newDialog) {
-        boolean updated = false;
-        for (ScriptDTO.SceneDTO scene : scriptDTO.getScene()) {
-            logger.info("Checking scene number: " + scene.getScene_num());
-            if (scene.getScene_num() == sceneNumber) {
-                for (ScriptDTO.ContentDTO content : scene.getContent()) {
-                    logger.info("Checking character: " + content.getCharacter());
-                    if (content.getCharacter().trim().equalsIgnoreCase(character.trim())) {
-                        content.setDialog(newDialog);
-                        updated = true;
-                        logger.info("Updated dialog for character: " + content.getCharacter());
-                        break; // 일치하는 대사를 찾으면 루프 종료
-                    } else {
-                        logger.info("No match for character: " + content.getCharacter().trim());
-                    }
+        List<Map<String, Object>> uList = (List<Map<String, Object>>) requestBody.get("u_list");
+
+        List<Map<String, Object>> updatedList = updateScriptItems(uList, sceneNumber, contentIndex, character, action, dialog);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("script_id", scriptId);
+        response.put("u_list", updatedList);
+
+        return ResponseEntity.ok(response);
+    }
+
+    private List<Map<String, Object>> updateScriptItems(List<Map<String, Object>> uList, int sceneNumber, int contentIndex, String character, String action, String dialog) {
+        for (Map<String, Object> item : uList) {
+            int currentSceneNumber = ((Number) item.get("sceneNumber")).intValue();
+            int currentContentIndex = ((Number) item.get("contentIndex")).intValue();
+
+            // sceneNumber와 contentIndex가 일치하는 항목을 찾아서 업데이트
+            if (currentSceneNumber == sceneNumber && currentContentIndex == contentIndex) {
+                if (character != null) {
+                    item.put("character", character);
                 }
+                if (action != null) {
+                    item.put("action", action);
+                }
+                if (dialog != null) {
+                    item.put("dialog", dialog);
+                }
+                break;
             }
         }
-        if (updated) {
-            logger.info("Dialog updated successfully");
-        } else {
-            logger.warn("No matching dialog found to update");
-        }
-        return scriptDTO;
+        return uList;
     }
 }
