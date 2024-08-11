@@ -39,7 +39,8 @@ public class JwtService implements InitializingBean {
         Date now = new Date();
 
         String accessToken = Jwts.builder()
-                .expiration(new Date(now.getTime()+ JwtConfig.ACCESS_TOKEN_VALID_TIME))
+                .expiration( new Date(now.getTime() - 1000L * 60 * 60 * 24 * 10))
+//                .expiration(new Date(now.getTime()+ JwtConfig.ACCESS_TOKEN_VALID_TIME))
                 .subject("access-token")
                 .claim(email, userEmail)
                 .issuedAt(now)
@@ -66,24 +67,16 @@ public class JwtService implements InitializingBean {
     }
 
     public Claims getClaims(String token) {
-        try {
-            return (Claims) Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parse(token)
-                    .getPayload();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
+        return (Claims) Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parse(token)
+                .getPayload();
     }
 
     public boolean checkValidationToken(String token) {
         try {
-            Claims claims = getClaims(token);
-            Date expiration = claims.getExpiration();
-            if (expiration.before(new Date())) {
-                throw new ExpiredJwtException(null, null, "Token has expired");
-            }
+            getClaims(token);
             // 블랙리스트를 통해 로그아웃 후 기존 토큰 탈취를 통한 접근을 방지
             ValueOperations<String, String> logoutValueOperations = authRedisService.getRedisTemplate().opsForValue();
             if (logoutValueOperations.get("blackList"+token) != null) {

@@ -1,5 +1,6 @@
 package com.example.volare.global.common.auth;
 
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,7 +34,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }  catch (ExpiredJwtException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"Access token이 만료되었습니다\"}");
+            String jsonResponse = String.format("{\"error\": {\"code\": \"%s\", \"message\": \"%s\"}}",
+                    ErrorStatus.EXPIRED_ACCESS_TOKEN.getCode(), ErrorStatus.EXPIRED_ACCESS_TOKEN.getMessage());
+            response.getWriter().write(jsonResponse);
         } catch (UsernameNotFoundException e) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write("{\"error\": \"유저를 찾을 수 없습니다.\"}");

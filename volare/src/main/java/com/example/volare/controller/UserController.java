@@ -36,8 +36,8 @@ public class UserController {
         TokenDTO tokens = jwtService.reissueToken(accessToken, refreshToken);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-AUTH-TOKEN", tokens.getAccessToken());
-        headers.add("refresh-token", tokens.getRefreshToken());
+        headers.add("accessToken", tokens.getAccessToken());
+        headers.add("refreshToken", tokens.getRefreshToken());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .headers(headers)
