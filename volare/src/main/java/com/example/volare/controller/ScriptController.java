@@ -11,6 +11,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/scripts")
 public class ScriptController {
     private final ScriptService scriptService;
