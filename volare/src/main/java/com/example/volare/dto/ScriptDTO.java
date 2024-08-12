@@ -3,6 +3,7 @@ package com.example.volare.dto;
 
 import com.example.volare.model.Script;
 import com.example.volare.model.ScriptScene;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.List;
@@ -55,7 +56,11 @@ public class ScriptDTO {
      @Getter
      public static class NovelToStoryScriptResponseDTO {
          private Script script;
+
+         @JsonInclude(JsonInclude.Include.NON_NULL)
          private String script_str;
+         @JsonInclude(JsonInclude.Include.NON_NULL)
+         private Long scriptId;
 
 
          @Builder
@@ -84,6 +89,9 @@ public class ScriptDTO {
                      private String action;
                      private String character;
                      private String dialog;
+
+                     // TODO: type 필요성 확인
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
                      private String type;
                  }
              }
@@ -123,7 +131,7 @@ public class ScriptDTO {
                          )
                          .build()
                  )
-                 .script_str(scriptEntity.getScriptFile())
+                 .scriptId(scriptEntity.getId())
                  .build();
      }
 

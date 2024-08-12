@@ -35,7 +35,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         response.addCookie(refreshTokenCookie);
 
         // 리다이렉트 URL 설정
-        String redirectUri = "http://localhost:3000";
+        String redirectUri = "http://localhost:3000/main";
 
         // 리다이렉트 수행
         response.sendRedirect(redirectUri);
