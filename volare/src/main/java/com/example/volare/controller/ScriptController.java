@@ -18,7 +18,6 @@ public class ScriptController {
     private final ScriptService scriptService;
 
     // SAMPLE 변환 조회
-    //TODO: 반환 값에 대해 FE 회의 진행 - String(sample, 일반 구분 컬럼 추가) or Object json(scriptFile 태그 검색)
     @GetMapping("sample/{sampleTag}")
     public ApiResponse<ScriptDTO.SampleScriptResponseDTO> getSampleScripts(@PathVariable String sampleTag){
         ScriptDTO.SampleScriptResponseDTO sampleScript = scriptService.getSampleScript(sampleTag);
