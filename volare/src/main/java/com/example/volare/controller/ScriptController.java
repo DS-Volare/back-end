@@ -16,6 +16,12 @@ import java.util.Map;
 public class ScriptController {
     private final ScriptService scriptService;
 
+    // SAMPLE 변환 조회
+    @GetMapping("sample/{sampleTag}")
+    public ApiResponse<ScriptDTO.SampleScriptResponseDTO> getSampleScripts(@PathVariable String sampleTag){
+        ScriptDTO.SampleScriptResponseDTO sampleScript = scriptService.getSampleScript(sampleTag);
+        return ApiResponse.onSuccess(sampleScript);
+    }
     @PutMapping("/{scriptId}/update")
     public ResponseEntity<Map<String, Object>> updateScript(
             @PathVariable Long scriptId,
@@ -29,6 +35,7 @@ public class ScriptController {
         List<Map<String, Object>> uList = (List<Map<String, Object>>) requestBody.get("u_list");
 
         List<Map<String, Object>> updatedList = updateScriptItems(uList, sceneNumber, contentIndex, character, action, dialog);
+  
 
         Map<String, Object> response = new HashMap<>();
         response.put("script_id", scriptId);
