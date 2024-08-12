@@ -1,7 +1,15 @@
 package com.example.volare.controller;
 
 
+import com.example.volare.dto.ScriptDTO;
+import com.example.volare.global.apiPayload.ApiResponse;
+import com.example.volare.global.common.auth.model.AuthUser;
+import com.example.volare.service.ScriptService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -22,7 +30,18 @@ public class ScriptController {
         ScriptDTO.SampleScriptResponseDTO sampleScript = scriptService.getSampleScript(sampleTag);
         return ApiResponse.onSuccess(sampleScript);
     }
-    @PutMapping("/{scriptId}/update")
+
+    @PostMapping("/{novelId}")
+    public ApiResponse<ScriptDTO.NovelToStoryScriptResponseDTO> saveData(
+            @PathVariable String novelId,
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
+        ScriptDTO.NovelToStoryScriptResponseDTO storyScript = scriptService.saveStoryScript(novelId, authUser.getUser(), req);
+        return ApiResponse.onSuccess(storyScript);
+
+    }
+
+        @PutMapping("/{scriptId}/update")
     public ResponseEntity<Map<String, Object>> updateScript(
             @PathVariable Long scriptId,
             @RequestParam int sceneNumber,
