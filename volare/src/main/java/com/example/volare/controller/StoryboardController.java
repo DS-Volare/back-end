@@ -1,6 +1,6 @@
 package com.example.volare.controller;
 
-import com.example.volare.model.StoryboardDTO;
+import com.example.volare.dto.StoryboardDTO;
 import com.example.volare.service.StoryboardService;
 import com.example.volare.global.apiPayload.ApiResponse;
 import lombok.RequiredArgsConstructor;
