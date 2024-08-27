@@ -1,37 +1,50 @@
 package com.example.volare.service;
 
+import com.example.volare.dto.AppearanceStatisticsDTO;
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
+import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
+import com.example.volare.model.Script;
+import com.example.volare.repository.ScriptRepository;
 import com.example.volare.repository.ScriptSceneRepository;
 import com.example.volare.vo.CharacterStatisticsVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ScriptSceneService {
 
+    private final ScriptRepository scriptRepository;
     private final ScriptSceneRepository scriptSceneRepository;
 
-    public Map<String, Double> getCharacterStatistics(Long sceneId) {
-        // 전체 대사 수를 계산합니다.
+    public AppearanceStatisticsDTO getCharacterStatistics(Long scriptId) {
+
+        // 대본 존재 여부 검증
+        Script script = scriptRepository.findById(scriptId).orElseThrow(()-> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        Long sceneId = script.getScriptScenes().get(0).getId();
+
+        // 전체 대사 수를 계산
         long totalLines = scriptSceneRepository.countTotalLinesBySceneId(sceneId);
 
-        // 등장인물별 대사 수를 계산합니다.
+        // 등장인물별 대사 수를 계산
         List<CharacterStatisticsVO> characterCounts = scriptSceneRepository.countLinesByCharacter(sceneId);
 
-        // 비율을 계산하여 결과를 반환합니다.
-        Map<String, Double> statistics = new HashMap<>();
-        for (CharacterStatisticsVO vo : characterCounts) {
-            String characterName = vo.getCharacterName();
-            long count = vo.getCount();
-            double percentage = (count * 100.0) / totalLines;
-            statistics.put(characterName, percentage);
-        }
+        // 비율 계산
+        List<AppearanceStatisticsDTO.CharacterStatisticsDTO> characterRate = characterCounts.stream()
+                .map(vo -> AppearanceStatisticsDTO.CharacterStatisticsDTO.builder()
+                        .characterName(vo.getCharacterName())
+                        .percentage((vo.getCount() * 100.0) / totalLines)
+                        .build())
+                .collect(Collectors.toList());
 
-        return statistics;
+        // DTO를 반환합니다.
+        return AppearanceStatisticsDTO.builder()
+                .totalLines(totalLines)
+                .characterRate(characterRate)
+                .build();
     }
 
 }
