@@ -107,12 +107,11 @@ public class JwtService implements InitializingBean {
             accessEmail = String.valueOf(e.getClaims().get(email));
         }
 
-        try {
             getClaims(refreshToken);
 
-            // Redis 사용 시에는 refreshToken 유효 기간 검증 필요 없음 -> 시간이 지난 후 삭제됨
+            // Redis 사용 시에는 refreshToken 시간이 지난 후 삭제됨 -> 존재하지 않으면 만료됨!
             String value = authRedisService.getValues(refreshToken)
-                    .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+                    .orElseThrow(() -> new GeneralHandler(ErrorStatus.EXPIRED_REFRESH_TOKEN));
             if(!value.equals(accessEmail)) {
                 throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
             }
@@ -122,8 +121,5 @@ public class JwtService implements InitializingBean {
             TokenDTO newTokens = createAndSaveTokens(value);
 
             return newTokens;
-        } catch (ExpiredJwtException e) {
-            throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
-        }
     }
 }
