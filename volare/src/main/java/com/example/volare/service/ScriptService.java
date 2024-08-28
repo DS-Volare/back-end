@@ -4,6 +4,7 @@ package com.example.volare.service;
 import com.example.volare.dto.ScriptDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
+import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.User;
 import com.example.volare.repository.NovelRepository;
@@ -53,13 +54,13 @@ public class ScriptService {
 
     public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
-        //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // WebClient 호출을 동기식으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
 
-        // 결과를 엔티티로 변환
-        Script entity = ScriptDTO.convertToEntity(novelToStoryScriptResponseDTO);
+         // 결과+ 등장인물 정보 엔티티 변환
+        Script entity = ScriptDTO.convertToEntity(novel,novelToStoryScriptResponseDTO, changeNovel.getCandidates());
 
         // 동기식으로 DB에 저장
         scriptRepository.save(entity);

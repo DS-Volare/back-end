@@ -1,6 +1,7 @@
 package com.example.volare.dto;
 
 
+import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.ScriptScene;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -135,8 +136,10 @@ public class ScriptDTO {
                  .build();
      }
 
-     public static Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO responseDTO ) {
+     public static Script convertToEntity(Novel novel, ScriptDTO.NovelToStoryScriptResponseDTO responseDTO, List<String> candidates) {
          Script script = Script.builder()
+                 .novel(novel)
+                 .characters(candidates)
                  .scriptFile(responseDTO.getScript_str())
                  .scriptScenes(responseDTO.getScript().getScene().stream()
                          .map(sceneDTO -> ScriptScene.builder()
