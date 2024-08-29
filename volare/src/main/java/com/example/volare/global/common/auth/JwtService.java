@@ -39,8 +39,8 @@ public class JwtService implements InitializingBean {
         Date now = new Date();
 
         String accessToken = Jwts.builder()
-                .expiration( new Date(now.getTime() - 1000L * 60 * 60 * 24 * 10))
-//                .expiration(new Date(now.getTime()+ JwtConfig.ACCESS_TOKEN_VALID_TIME))
+//                .expiration( new Date(now.getTime() - 1000L * 60 * 60 * 24 * 10))
+                .expiration(new Date(now.getTime()+ JwtConfig.ACCESS_TOKEN_VALID_TIME))
                 .subject("access-token")
                 .claim(email, userEmail)
                 .issuedAt(now)
