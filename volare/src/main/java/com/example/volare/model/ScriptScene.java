@@ -26,7 +26,7 @@ public class ScriptScene {
     private Long id;
 
     //대본 하나당 복수 값
-    private String locates; // 장소
+    private String location; // 장소
     private int sceneNum;
     private String time; // 시간
 
