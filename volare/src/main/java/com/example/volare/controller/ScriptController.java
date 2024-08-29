@@ -1,9 +1,11 @@
 package com.example.volare.controller;
 
 
+import com.example.volare.dto.AppearanceStatisticsDTO;
 import com.example.volare.dto.ScriptDTO;
 import com.example.volare.global.apiPayload.ApiResponse;
 import com.example.volare.global.common.auth.model.AuthUser;
+import com.example.volare.service.ScriptSceneService;
 import com.example.volare.service.ScriptService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.Map;
 @RequestMapping("/scripts")
 public class ScriptController {
     private final ScriptService scriptService;
+    private final ScriptSceneService scriptSceneService;
 
     // SAMPLE 변환 조회
     @GetMapping("sample/{sampleTag}")
@@ -40,6 +43,15 @@ public class ScriptController {
         return ApiResponse.onSuccess(storyScript);
 
     }
+
+    @GetMapping("/{scriptId}/appearance-rate")
+    public ApiResponse<AppearanceStatisticsDTO> getCharacterStatistics(
+            @PathVariable Long scriptId, @AuthenticationPrincipal AuthUser authUser
+    ) {
+        AppearanceStatisticsDTO response = scriptSceneService.getCharacterStatistics(scriptId);
+        return ApiResponse.onSuccess(response);
+    }
+
 
         @PutMapping("/{scriptId}/update")
     public ResponseEntity<Map<String, Object>> updateScript(
