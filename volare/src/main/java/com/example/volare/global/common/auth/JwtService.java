@@ -39,7 +39,8 @@ public class JwtService implements InitializingBean {
         Date now = new Date();
 
         String accessToken = Jwts.builder()
-                .expiration(new Date(now.getTime()+ JwtConfig.ACCESS_TOKEN_VALID_TIME))
+                .expiration( new Date(now.getTime() - 1000L * 60 * 60 * 24 * 10))
+//                .expiration(new Date(now.getTime()+ JwtConfig.ACCESS_TOKEN_VALID_TIME))
                 .subject("access-token")
                 .claim(email, userEmail)
                 .issuedAt(now)
@@ -66,24 +67,16 @@ public class JwtService implements InitializingBean {
     }
 
     public Claims getClaims(String token) {
-        try {
-            return (Claims) Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parse(token)
-                    .getPayload();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
+        return (Claims) Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parse(token)
+                .getPayload();
     }
 
     public boolean checkValidationToken(String token) {
         try {
-            Claims claims = getClaims(token);
-            Date expiration = claims.getExpiration();
-            if (expiration.before(new Date())) {
-                throw new ExpiredJwtException(null, null, "Token has expired");
-            }
+            getClaims(token);
             // 블랙리스트를 통해 로그아웃 후 기존 토큰 탈취를 통한 접근을 방지
             ValueOperations<String, String> logoutValueOperations = authRedisService.getRedisTemplate().opsForValue();
             if (logoutValueOperations.get("blackList"+token) != null) {
@@ -114,12 +107,11 @@ public class JwtService implements InitializingBean {
             accessEmail = String.valueOf(e.getClaims().get(email));
         }
 
-        try {
             getClaims(refreshToken);
 
-            // Redis 사용 시에는 refreshToken 유효 기간 검증 필요 없음 -> 시간이 지난 후 삭제됨
+            // Redis 사용 시에는 refreshToken 시간이 지난 후 삭제됨 -> 존재하지 않으면 만료됨!
             String value = authRedisService.getValues(refreshToken)
-                    .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+                    .orElseThrow(() -> new GeneralHandler(ErrorStatus.EXPIRED_REFRESH_TOKEN));
             if(!value.equals(accessEmail)) {
                 throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
             }
@@ -129,8 +121,5 @@ public class JwtService implements InitializingBean {
             TokenDTO newTokens = createAndSaveTokens(value);
 
             return newTokens;
-        } catch (ExpiredJwtException e) {
-            throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
-        }
     }
 }
