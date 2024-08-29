@@ -26,7 +26,7 @@ public class ScriptDTO {
          public static class SceneDTO {
              private int scene_num;
              private String location;
-             private String time;
+             private String props;
              private List<ContentDTO> content;
          }
 
@@ -80,7 +80,7 @@ public class ScriptDTO {
                  private List<Content> content;
                  private String location;
                  private int scene_num;
-                 private String time;
+                 private String props;
 
                  @Builder
                  @AllArgsConstructor
@@ -113,10 +113,10 @@ public class ScriptDTO {
          return ScriptDTO.NovelToStoryScriptResponseDTO.builder()
                  .script(ScriptDTO.NovelToStoryScriptResponseDTO.Script.builder()
                          .scene(scriptEntity.getScriptScenes().stream()
-                                 .map(scene -> ScriptDTO.NovelToStoryScriptResponseDTO.Script.Scene.builder()
+                                 .map(scene -> NovelToStoryScriptResponseDTO.Script.Scene.builder()
                                          .location(scene.getLocation())
                                          .scene_num(scene.getSceneNum())
-                                         .time(scene.getTime())
+                                         .props(scene.getProps())
                                          .content(scene.getContents().stream()
                                                  .map(content -> ScriptDTO.NovelToStoryScriptResponseDTO.Script.Scene.Content.builder()
                                                          .action(content.getAction())
@@ -145,7 +145,7 @@ public class ScriptDTO {
                          .map(sceneDTO -> ScriptScene.builder()
                                  .location(sceneDTO.getLocation())
                                  .sceneNum(sceneDTO.getScene_num())
-                                 .time(sceneDTO.getTime())
+                                 .props(sceneDTO.getProps())
                                  .contents(sceneDTO.getContent().stream()
                                          .map(content ->  ScriptScene.Content.builder()
                                                  .action(content.getAction())
