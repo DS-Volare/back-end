@@ -2,6 +2,7 @@ package com.example.volare.service;
 
 
 import com.example.volare.dto.ScriptDTO;
+import com.example.volare.dto.ScriptDetailsDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.model.Novel;
@@ -14,6 +15,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import com.example.volare.model.ScriptScene;
+
 
 
 @Slf4j
@@ -59,7 +65,7 @@ public class ScriptService {
         // WebClient 호출을 동기식으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
 
-         // 결과+ 등장인물 정보 엔티티 변환
+        // 결과+ 등장인물 정보 엔티티 변환
         Script entity = ScriptDTO.convertToEntity(novel,novelToStoryScriptResponseDTO, changeNovel.getCandidates());
 
         // 동기식으로 DB에 저장
@@ -96,5 +102,32 @@ public class ScriptService {
         return responseDTO;
     }
     */
+
+    public ScriptDetailsDTO getScriptDetails(Long scriptId) {
+        // 스크립트 존재 여부 검증
+        Script script = scriptRepository.findById(scriptId)
+                .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+
+        // 스크립트 제목 추출
+        String title = script.getNovel().getTitle();
+
+        // 스크립트 내 모든 location 추출
+        List<String> locations = script.getScriptScenes().stream()
+                .map(ScriptScene::getLocation)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 스크립트 내 모든 등장인물 추출
+        List<String> characters = script.getCharacters().stream()
+                .distinct()
+                .collect(Collectors.toList());
+
+        // DTO로 변환하여 반환
+        return ScriptDetailsDTO.builder()
+                .title(title)
+                .locations(locations)
+                .characters(characters)
+                .build();
+    }
 
 }

@@ -3,6 +3,7 @@ package com.example.volare.controller;
 
 import com.example.volare.dto.AppearanceStatisticsDTO;
 import com.example.volare.dto.ScriptDTO;
+import com.example.volare.dto.ScriptDetailsDTO;
 import com.example.volare.global.apiPayload.ApiResponse;
 import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.service.ScriptSceneService;
@@ -53,7 +54,7 @@ public class ScriptController {
     }
 
 
-        @PutMapping("/{scriptId}/update")
+    @PutMapping("/{scriptId}/update")
     public ResponseEntity<Map<String, Object>> updateScript(
             @PathVariable Long scriptId,
             @RequestParam int sceneNumber,
@@ -66,7 +67,7 @@ public class ScriptController {
         List<Map<String, Object>> uList = (List<Map<String, Object>>) requestBody.get("u_list");
 
         List<Map<String, Object>> updatedList = updateScriptItems(uList, sceneNumber, contentIndex, character, action, dialog);
-  
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("script_id", scriptId);
@@ -96,5 +97,11 @@ public class ScriptController {
             }
         }
         return uList;
+    }
+
+    @GetMapping("/{scriptId}/details")
+    public ApiResponse<ScriptDetailsDTO> getScriptDetails(@PathVariable Long scriptId) {
+        ScriptDetailsDTO scriptDetails = scriptService.getScriptDetails(scriptId);
+        return ApiResponse.onSuccess(scriptDetails);
     }
 }
