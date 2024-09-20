@@ -1,40 +1,37 @@
 package com.example.volare.model;
 
 
-import com.example.volare.global.common.BaseEntity;
-import jakarta.persistence.*;
+import com.example.volare.global.common.BaseDocument;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
-@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="message")
-public class MessageEntity extends BaseEntity {
+@Document(collection = "message")
+public class MessageEntity extends BaseDocument {
 
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private String id;
 
-    // 다대일 관계: 하나의 채팅방에 속함
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chatting_id", referencedColumnName = "id")
-    private ChatRoomEntity chatRoom;
+    @Field("chatRoom")
+    private String chatRoomId; // ChatRoomEntity의 ID
 
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Field("messageType")
     private MessageType messagetype;
 
     public enum MessageType {
-        QUESTION,GPT
+        QUESTION, GPT
     }
-
 }

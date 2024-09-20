@@ -1,8 +1,7 @@
 package com.example.volare.global.common.auth;
 
-import com.example.volare.global.common.auth.model.TokenDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -16,7 +15,6 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-    private final ObjectMapper objectMapper;
     private final HttpSession httpSession;
 
     @Override
@@ -25,14 +23,21 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         String accessToken = (String) httpSession.getAttribute("accessToken");
         String refreshToken = (String) httpSession.getAttribute("refreshToken");
 
-        // 응답 설정
-        response.setCharacterEncoding("utf-8");
-        response.setHeader("X-AUTH-TOKEN", accessToken);
-        response.setHeader("refresh-token", refreshToken);
-        response.setContentType("application/json");
 
-        // 응답 본문 설정 (필요에 따라 수정 가능)
-        String body = objectMapper.writeValueAsString(new TokenDTO(accessToken, refreshToken));
-        response.getWriter().write(body);
+        // 쿠키 설정
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setPath("/");
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setPath("/");
+
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
+
+        // 리다이렉트 URL 설정
+        String redirectUri = "http://localhost:3000/main";
+
+        // 리다이렉트 수행
+        response.sendRedirect(redirectUri);
     }
 }

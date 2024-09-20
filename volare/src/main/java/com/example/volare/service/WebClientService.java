@@ -1,5 +1,6 @@
 package com.example.volare.service;
 
+import com.example.volare.dto.MessageDTO;
 import com.example.volare.dto.ScriptDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +38,19 @@ public class WebClientService {
                 .doOnError(error -> {
                     // 오류 처리
                     // 외부 API Connection refused: no further information 오류는 클라이언트가 서버에 연결을 시도했지만, 서버가 요청을 수락하지 않거나 서버에 연결할 수 없다는
+                });
+    }
+
+    //GPT 질문 API
+    public Mono<MessageDTO.MessageGPTResponseDto> responseGPT(MessageDTO.MessageGPTRequestDto question){
+        return this.webClient.post()
+                .uri("/chatbot")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(question)
+                .retrieve()
+                .bodyToMono(MessageDTO.MessageGPTResponseDto.class)
+                .doOnError(error ->{
+
                 });
     }
 }

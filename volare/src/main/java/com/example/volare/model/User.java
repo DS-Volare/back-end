@@ -28,10 +28,6 @@ public class User extends BaseEntity{
     @Column
     private String picture;
 
-    //TODO: Redis 저장으로 변경
-    private String accessToken;
-    private String refreshToken;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SocialType socialType;

@@ -46,12 +46,17 @@ dependencies {
 	//jpa-db
 	implementation 'org.postgresql:postgresql:42.7.3'
 	implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3'
+	// mongoDB
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
 	//test-db
 	testRuntimeOnly 'com.h2database:h2'
 	//Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+  
 	//Jackson에 jackson-datatype-jsr310 모듈 추가(LocalDateTime)
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
+
 
 }
 

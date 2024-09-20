@@ -26,9 +26,9 @@ public class ScriptScene {
     private Long id;
 
     //대본 하나당 복수 값
-    private String locates; // 장소
+    private String location; // 장소
     private int sceneNum;
-    private String time; // 시간
+    private String props; // 소품
 
     @ElementCollection
     @CollectionTable(name = "script_scene_contents", joinColumns = @JoinColumn(name = "scene_id"))

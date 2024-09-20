@@ -1,5 +1,6 @@
 package com.example.volare.global.common.config;
 
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.common.auth.CustomAuthenticationSuccessHandler;
 import com.example.volare.global.common.auth.CustomOAuth2UserService;
 import com.example.volare.global.common.auth.JwtAuthenticationFilter;
@@ -11,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -28,7 +30,7 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/websocket/**","/websocket/pub/**","/websocket/sub/**","scripts/sample/**");
+        return web -> web.ignoring().requestMatchers("/websocket/**","/websocket/pub/**,/websocket/sub/**","/scripts/sample/**");
     }
 
 
@@ -39,8 +41,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 기능 비활성
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorizeRequest) -> authorizeRequest
-                        .requestMatchers("/", "/css/**", "images/**", "/js/**", "/oauth/**", "/logout/*", "/websocket/**").permitAll()
+                        .requestMatchers("/", "/css/**", "images/**", "/js/**", "/oauth/**", "/logout/**","/users/reissue-token").permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptionHandling ->
+                        exceptionHandling
+                                .authenticationEntryPoint(customAuthenticationEntryPoint())
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth // OAuth2 로그인 설정
@@ -53,6 +59,18 @@ public class SecurityConfig {
 
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint customAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            String jsonResponse = String.format("{\"error\": {\"code\": \"%s\", \"message\": \"%s\"}}",
+                    ErrorStatus._UNAUTHORIZED.getCode(), ErrorStatus._UNAUTHORIZED.getMessage());
+
+            response.getWriter().write(jsonResponse);
+        };
     }
 
     @Bean

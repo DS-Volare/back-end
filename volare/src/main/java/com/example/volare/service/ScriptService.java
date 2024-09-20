@@ -4,8 +4,8 @@ package com.example.volare.service;
 import com.example.volare.dto.ScriptDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
+import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
-import com.example.volare.model.ScriptScene;
 import com.example.volare.model.User;
 import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,9 +26,9 @@ public class ScriptService {
 
     // SAMPLE 조회
     @Cacheable(cacheNames = "SAMPLE_SCRIPTS" , key = "#sampleTag")
-    public ScriptDTO.NovelToStoryScriptResponseDTO getSampleScript(String sampleTag){
-        Script script = scriptRepository.findByScriptFile(sampleTag).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-        return ScriptDTO.EntityToDTO(script);
+    public ScriptDTO.SampleScriptResponseDTO getSampleScript(String sampleTag){
+        Script script = scriptRepository.findByType(sampleTag).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return new ScriptDTO.SampleScriptResponseDTO(script.getScriptFile());
     }
 
 
@@ -54,24 +51,27 @@ public class ScriptService {
 
 
     //TODO: 속도 테스트를 위함(2) -> 동기식 저장 , 동기식 호출
-    /*
-    public Script saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
-        //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // WebClient 호출을 동기식으로 처리
         ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
 
-        // 결과를 엔티티로 변환
-        Script entity = convertToEntity(novelToStoryScriptResponseDTO);
+         // 결과+ 등장인물 정보 엔티티 변환
+        Script entity = ScriptDTO.convertToEntity(novel,novelToStoryScriptResponseDTO, changeNovel.getCandidates());
 
         // 동기식으로 DB에 저장
-        return scriptRepository.save(entity);
+        scriptRepository.save(entity);
+        // DTO 계층 사용
+        return ScriptDTO.EntityToDTO(entity);
     }
-    */
+
 
 
     //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
+    /*
     public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
         // Novel
@@ -83,7 +83,7 @@ public class ScriptService {
         // 비동기적으로 저장 로직 수행
         Mono.fromCallable(() -> {
                     //log.info("DB save task started");
-                    Script entity = convertToEntity(responseDTO);
+                    Script entity = ScriptDTO.convertToEntity(responseDTO);
                     scriptRepository.save(entity);
                     //log.info("DB save task completed");
                     return entity;
@@ -95,34 +95,6 @@ public class ScriptService {
         // 스크립트 결과 FE 반환
         return responseDTO;
     }
-
-
-
-    //
-    private Script convertToEntity(ScriptDTO.NovelToStoryScriptResponseDTO responseDTO ) {
-        Script script = Script.builder()
-                .scriptFile(responseDTO.getScript_str())
-                .scriptScenes(responseDTO.getScript().getScene().stream()
-                        .map(sceneDTO -> ScriptScene.builder()
-                                .locates(sceneDTO.getLocation())
-                                .sceneNum(sceneDTO.getScene_num())
-                                .time(sceneDTO.getTime())
-                                .contents(sceneDTO.getContent().stream()
-                                        .map(content ->  ScriptScene.Content.builder()
-                                                        .action(content.getAction())
-                                                        .character(content.getCharacter())
-                                                        .dialog(content.getDialog())
-                                                        .build()
-                                        )
-                                        .collect(Collectors.toList())
-                                )
-                                .build()
-                        )
-                        .collect(Collectors.toList())
-                )
-                .build();
-
-        return script;
-    }
+    */
 
 }
