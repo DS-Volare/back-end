@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -71,6 +72,12 @@ public class ScriptService {
 
         // 동기식으로 DB에 저장
         scriptRepository.save(entity);
+
+        /* 스크립트 저장된 후, 스크립트가 속한 Novel의 수정 시간 갱신*/
+        novel.updateTimestamp(LocalDateTime.now());
+        novelRepository.save(novel);
+
+
         // DTO 계층 사용
         return ScriptDTO.EntityToDTO(entity);
     }
@@ -104,7 +111,7 @@ public class ScriptService {
     }
     */
 
-    public StatisticsDTO.ScriptDetailsDTO getScriptDetails(Long scriptId) {
+    public StatisticsDTO.ScriptDetailsDTO getScriptInfo(Long scriptId) {
         // 스크립트 존재 여부 검증
         Script script = scriptRepository.findById(scriptId)
                 .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));

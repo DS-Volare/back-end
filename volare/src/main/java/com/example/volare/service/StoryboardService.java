@@ -1,8 +1,10 @@
 package com.example.volare.service;
 
 import com.example.volare.dto.StoryboardDTO;
+import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.StoryBoard;
+import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
 import com.example.volare.repository.StoryBoardRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +29,7 @@ public class StoryboardService {
     private final String aiServerUrl = "http://75.63.212.242:44809/convert_storyboard/";
     private final ScriptRepository scriptRepository;
     private final StoryBoardRepository storyBoardRepository;
+    private final NovelRepository novelRepository;
 
     public StoryboardDTO.Response generateStoryboard(StoryboardDTO.Request request) {
         RestTemplate restTemplate = new RestTemplate();
@@ -76,6 +80,12 @@ public class StoryboardService {
                 .collect(Collectors.toList());
 
         storyBoardRepository.saveAll(storyBoards);
+
+        /* 스토리보드가 저장된 후, 스토리보다가 속한 Novel의 수정 시간 갱신*/
+        Novel novel = script.getNovel();
+        novel.updateTimestamp(LocalDateTime.now());
+        novelRepository.save(novel);
+
 
         return storyboardResponse;
     }

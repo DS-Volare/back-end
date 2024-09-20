@@ -27,8 +27,9 @@ public class NovelController {
 
     // 유저별 소설 변환 내역 조회
     @GetMapping("")
-    public ApiResponse<NovelDTO.UserConvertDTO> getMyConvertList
-    (@AuthenticationPrincipal AuthUser authUser, @RequestParam(required = false, defaultValue = "0", value = "pageNo") int pageNo){
+    public ApiResponse<NovelDTO.UserConvertDTO> getMyConvertList(
+            @AuthenticationPrincipal AuthUser authUser, @RequestParam(required = false, defaultValue = "0", value = "pageNo") int pageNo)
+    {
         NovelDTO.UserConvertDTO convertList = novelService.getConvertList(authUser.getUser(),pageNo);
         return ApiResponse.onSuccess(convertList);
     }

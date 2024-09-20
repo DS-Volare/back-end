@@ -76,6 +76,6 @@ public class ScriptController {
 
     @GetMapping("/{scriptId}/details")
     public ApiResponse<StatisticsDTO.ScriptDetailsDTO> getScriptDetails(@PathVariable Long scriptId) {
-        return ApiResponse.onSuccess(scriptService.getScriptDetails(scriptId));
+        return ApiResponse.onSuccess(scriptService.getScriptInfo(scriptId));
     }
 }
