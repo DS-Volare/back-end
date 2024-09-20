@@ -2,11 +2,14 @@ package com.example.volare.model;
 
 import com.example.volare.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -18,10 +21,9 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(name = "novels")
 public class Novel extends BaseEntity {
     @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "novel_id")
-    private String Id;
+    private Long Id;
     private String title; // 소설 제목
 
     @Column(name = "story_text", columnDefinition = "TEXT", nullable = false)

@@ -29,7 +29,7 @@ public class StoryBoardCut extends BaseEntity {
     private StoryBoard storyBoard;
 
     private String cutImage;
-    private String cutNum;
+    private int cutNum;
     private String angle_cam;
 
 

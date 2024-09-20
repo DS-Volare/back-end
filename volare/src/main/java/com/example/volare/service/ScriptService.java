@@ -45,7 +45,7 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(1) ->비동기 호출 비동기 저장- 완료 후 return
     /*
-    public Mono<Script> saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public Mono<Script> saveStoryScript(Long novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
         //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
@@ -60,7 +60,7 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(2) -> 동기식 저장 , 동기식 호출
 
-    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(Long novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
         Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
@@ -86,7 +86,7 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
     /*
-    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(Long novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
         // Novel
         novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -111,7 +111,7 @@ public class ScriptService {
     }
     */
 
-    public StatisticsDTO.ScriptDetailsDTO getScriptInfo(Long scriptId) {
+    public StatisticsDTO.MindMapDTO getScriptInfo(Long scriptId) {
         // 스크립트 존재 여부 검증
         Script script = scriptRepository.findById(scriptId)
                 .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -131,7 +131,7 @@ public class ScriptService {
                 .collect(Collectors.toList());
 
         // DTO로 변환하여 반환
-        return StatisticsDTO.ScriptDetailsDTO.builder()
+        return StatisticsDTO.MindMapDTO.builder()
                 .title(title)
                 .locations(locations)
                 .characters(characters)
@@ -161,4 +161,11 @@ public class ScriptService {
         return uList;
     }
 
+
+    // 대본 정보조회
+    public ScriptDTO.ScriptDetailResponseDTO getScriptDetail(Long scriptId){
+        Script script = scriptRepository.findById(scriptId)
+                .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return ScriptDTO.scriptConvertToDto(script);
+    }
 }

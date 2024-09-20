@@ -21,7 +21,7 @@ public class NovelController {
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody NovelDTO.NovelRequestDTO req )
     {
-        String saveNovel = novelService.saveNovel(authUser.getUser(), req);
+        Long saveNovel = novelService.saveNovel(authUser.getUser(), req);
         return ApiResponse.onSuccess(new NovelDTO.NovelResponseDTO(saveNovel));
     }
 

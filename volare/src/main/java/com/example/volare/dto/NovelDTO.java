@@ -25,7 +25,14 @@ public class NovelDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class NovelResponseDTO {
-        private String novelId;
+        private Long novelId;
+    }
+
+    @Getter
+    @Builder
+    public static class NovelDetailResponseDTO{
+        private String title;
+        private String storyText;
     }
 
     @Getter
@@ -45,7 +52,7 @@ public class NovelDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class NovelConvertListDTO {
-        private String id;
+        private Long novelId;;
         private String title;
         private String image;
 

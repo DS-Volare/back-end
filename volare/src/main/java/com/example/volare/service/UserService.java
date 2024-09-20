@@ -35,6 +35,7 @@ public class UserService {
     private final ScriptRepository scriptRepository;
     private final NovelRepository novelRepository;
 
+    //TODO: falLImgURL s3 이미지 링크로 수정 또는 FE 협의 후 null값 전달
     private final static  String falLImgURL = "로고url";
 
     public void signOut(String accessToken, String refreshToken) {
@@ -86,7 +87,7 @@ public class UserService {
                 .orElse(falLImgURL);  // 기본 URL 반환
 
         return NovelDTO.NovelConvertListDTO.builder()
-                .id(novel.getId())
+                .novelId(novel.getId())
                 .title(novel.getTitle())
                 .image(storyboardUrl)
                 .updatedAt(novel.getUpdatedAt().format(formatter))

@@ -36,7 +36,7 @@ public class ScriptController {
 
     @PostMapping("/{novelId}")
     public ApiResponse<ScriptDTO.NovelToStoryScriptResponseDTO> saveData(
-            @PathVariable String novelId,
+            @PathVariable Long novelId,
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
         ScriptDTO.NovelToStoryScriptResponseDTO storyScript = scriptService.saveStoryScript(novelId, authUser.getUser(), req);
@@ -75,7 +75,7 @@ public class ScriptController {
 
 
     @GetMapping("/{scriptId}/details")
-    public ApiResponse<StatisticsDTO.ScriptDetailsDTO> getScriptDetails(@PathVariable Long scriptId) {
+    public ApiResponse<StatisticsDTO.MindMapDTO> getScriptDetails(@PathVariable Long scriptId) {
         return ApiResponse.onSuccess(scriptService.getScriptInfo(scriptId));
     }
 }
