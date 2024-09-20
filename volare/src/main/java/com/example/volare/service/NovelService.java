@@ -45,7 +45,7 @@ public class NovelService {
 
     // 유저별 소설 변환 내역 조회
     //TODO: 정렬기준: 채팅 내역> 스토리보드 생성> 대본 생성 수정순서 기준
-    public List<NovelDTO.NovelConvertListDTO> getConvertList(User user, int pageNo) {
+    public NovelDTO.UserConvertDTO getConvertList(User user, int pageNo) {
         // pageNo가 0이면 첫 페이지(0번째 페이지)를 반환, 아니면 입력한 페이지 - 1을 사용
         pageNo = (pageNo == 0) ? 0 : (pageNo - 1);
 
@@ -57,18 +57,10 @@ public class NovelService {
 
         // Novel -> NovelCovertListDTO로 변환
         List<NovelDTO.NovelConvertListDTO> listDTO = novelList.stream()
-                .map(novel -> NovelDTO.NovelConvertListDTO.builder()
-                        .title(novel.getTitle())
-                        .image( // 스토리보드 이미지 혹은 기본 이미지 URL 반환
-                                storyBoardRepository.findByScript(
-                                                scriptRepository.findByNovel(novel).orElse(null)
-                                        ).flatMap(storyBoard -> storyBoard.getCuts().stream().findFirst())
-                                        .map(StoryBoardCut::getCutImage)
-                                        .orElse("defaultLogoUrl")) // 변환 안 됐을 때는 기본 이미지로 대체
-                        .build())
+                .map(this::toNovelConvertListDTO)
                 .toList();
 
-        return listDTO;
+        return NovelDTO.conversionConvert(novelList,listDTO);
     }
 
 
