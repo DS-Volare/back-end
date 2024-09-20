@@ -50,8 +50,8 @@ public class NovelDTO {
 
         // TODO: 소설 저장 시간 X, 최종 수정 시간 O
         /**
-         * case 1) 채팅 내역 갱신 -> 최종 수정 시간 가장 마지막 채팅 시간 반영
-         * case 2) 마지막 단계 - 스토리보드 생성 시간 = 수정 시간
+         * case 1) 채팅 내역 갱신 -> 최종 수정 시간 가장 마지막 채팅 시간 반영 -> Novel updateAt컬럼으로 관리
+         * case 2) 마지막 단계 - 스토리보드 생성 시간 = Novel updateAt컬럼으로 관리
          */
         private String updatedAt;
     }
