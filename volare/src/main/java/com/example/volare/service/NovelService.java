@@ -2,8 +2,12 @@ package com.example.volare.service;
 
 import com.example.volare.dto.NovelDTO;
 import com.example.volare.model.Novel;
+import com.example.volare.model.Script;
+import com.example.volare.model.StoryBoardCut;
 import com.example.volare.model.User;
 import com.example.volare.repository.NovelRepository;
+import com.example.volare.repository.ScriptRepository;
+import com.example.volare.repository.StoryBoardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,13 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class NovelService {
 
     private final NovelRepository novelRepository;
+    private final StoryBoardRepository storyBoardRepository;
+    private final ScriptRepository scriptRepository;
+
+    private final static  String falLImgURL = "로고url";
 
     // 원본 소설 저장
     @Transactional
@@ -36,18 +44,50 @@ public class NovelService {
     }
 
     // 유저별 소설 변환 내역 조회
-    public List<NovelDTO.NovelCovertListDTO>  getConvertList(User user, int pageNo){
-        //TODO: 단계 중 일부만 진행했을때 - 사진 이미지 반환 여부 확인(기본 이미지 or No이미지)
+    //TODO: 정렬기준: 채팅 내역> 스토리보드 생성> 대본 생성 수정순서 기준
+    public List<NovelDTO.NovelConvertListDTO> getConvertList(User user, int pageNo) {
+        // pageNo가 0이면 첫 페이지(0번째 페이지)를 반환, 아니면 입력한 페이지 - 1을 사용
         pageNo = (pageNo == 0) ? 0 : (pageNo - 1);
-        Pageable pageable = PageRequest.of(pageNo, 6, Sort.by(Sort.Order.asc("title"),Sort.Order.desc("createdAt")));
-        Page<Novel> novelList = novelRepository.findByUser(user,pageable);
-        List<NovelDTO.NovelCovertListDTO> listDTO = novelList.stream()
-                .map(list -> NovelDTO.NovelCovertListDTO
-                        .builder()
-                        .title(list.getTitle())
+
+        // 정렬 기준: title 오름차순, createdAt 내림차순
+        Pageable pageable = PageRequest.of(pageNo, 6, Sort.by(Sort.Order.asc("title"), Sort.Order.desc("createdAt")));
+
+        // 유저 기준으로 소설 리스트를 페이징하여 조회
+        Page<Novel> novelList = novelRepository.findByUser(user, pageable);
+
+        // Novel -> NovelCovertListDTO로 변환
+        List<NovelDTO.NovelConvertListDTO> listDTO = novelList.stream()
+                .map(novel -> NovelDTO.NovelConvertListDTO.builder()
+                        .title(novel.getTitle())
+                        .image( // 스토리보드 이미지 혹은 기본 이미지 URL 반환
+                                storyBoardRepository.findByScript(
+                                                scriptRepository.findByNovel(novel).orElse(null)
+                                        ).flatMap(storyBoard -> storyBoard.getCuts().stream().findFirst())
+                                        .map(StoryBoardCut::getCutImage)
+                                        .orElse("defaultLogoUrl")) // 변환 안 됐을 때는 기본 이미지로 대체
                         .build())
                 .toList();
-        return listDTO ;
+
+        return listDTO;
+    }
+
+
+
+    private NovelDTO.NovelConvertListDTO toNovelConvertListDTO(Novel novel) {
+
+        Optional<Script> scriptOptional = scriptRepository.findByNovel(novel);
+
+        String storyboardUrl = scriptOptional
+                .flatMap(storyBoardRepository::findByScript)
+                .flatMap(storyBoard -> storyBoard.getCuts().stream()
+                        .findFirst())  // 첫 번째 StoryBoardCut 찾기
+                .map(StoryBoardCut::getCutImage)  // StoryBoardCut에서 cutImage 가져오기
+                .orElse(falLImgURL);  // 기본 URL 반환
+
+        return NovelDTO.NovelConvertListDTO.builder()
+                .title(novel.getTitle())
+                .image(storyboardUrl)
+                .build();
     }
 
 }
