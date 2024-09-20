@@ -1,16 +1,22 @@
 package com.example.volare.service;
 
+import com.example.volare.dto.StoryboardDTO;
+import com.example.volare.model.Script;
+import com.example.volare.model.StoryBoard;
+import com.example.volare.repository.ScriptRepository;
+import com.example.volare.repository.StoryBoardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.stereotype.Service;
-import com.example.volare.dto.StoryboardDTO;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -18,6 +24,8 @@ import java.util.Collections;
 public class StoryboardService {
 
     private final String aiServerUrl = "http://75.63.212.242:44809/convert_storyboard/";
+    private final ScriptRepository scriptRepository;
+    private final StoryBoardRepository storyBoardRepository;
 
     public StoryboardDTO.Response generateStoryboard(StoryboardDTO.Request request) {
         RestTemplate restTemplate = new RestTemplate();
@@ -45,5 +53,30 @@ public class StoryboardService {
             log.error("Unexpected error: ", e);
             throw new RuntimeException("An unexpected error occurred while generating storyboard", e);
         }
+    }
+
+    public StoryboardDTO.Response saveStoryboard(Long scriptId, StoryboardDTO.Request request) {
+        Script script = scriptRepository.findById(scriptId)
+                .orElseThrow(() -> new RuntimeException("Script not found with id: " + scriptId));
+
+        // Generate the storyboard
+        StoryboardDTO.Response storyboardResponse = generateStoryboard(request);
+
+        // Convert the DTO to entities and save to the database
+        List<StoryBoard> storyBoards = storyboardResponse.getScene().stream()
+                .map(scene -> StoryBoard.builder()
+                        .script(script)
+                        .sceneNum(String.valueOf(scene.getScene_num()))
+                        .locate(scene.getLocation())
+                        .time(scene.getTime())
+                        .summary(scene.getCuts().stream()
+                                .map(cut -> cut.getCut_num() + ": " + cut.getText())
+                                .collect(Collectors.joining("\n")))
+                        .build())
+                .collect(Collectors.toList());
+
+        storyBoardRepository.saveAll(storyBoards);
+
+        return storyboardResponse;
     }
 }
