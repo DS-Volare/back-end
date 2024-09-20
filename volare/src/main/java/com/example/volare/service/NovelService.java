@@ -84,6 +84,7 @@ public class NovelService {
                 .orElse(falLImgURL);  // 기본 URL 반환
 
         return NovelDTO.NovelConvertListDTO.builder()
+                .id(novel.getId())
                 .title(novel.getTitle())
                 .image(storyboardUrl)
                 .updatedAt(novel.getUpdatedAt().format(formatter))
