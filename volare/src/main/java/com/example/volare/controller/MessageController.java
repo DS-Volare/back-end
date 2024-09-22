@@ -11,10 +11,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -42,8 +39,9 @@ public class MessageController {
     // 채팅 내역 조회
     @GetMapping("/chats/{chatRoomId}")
     public ApiResponse<ChatRoomDTO.ChatRoomAllMessageResponseDto> getChatRoomMessages(@AuthenticationPrincipal AuthUser authUser,
-                                                                                      @PathVariable("chatRoomId") String chatRoomId) {
-        ChatRoomDTO.ChatRoomAllMessageResponseDto chatRoomMessages = messageService.getChatRoomMessages(authUser.getUser(), chatRoomId);
+                                                                                      @PathVariable("chatRoomId") String chatRoomId,
+                                                                                      @RequestParam(required = false) String lastMessageId) {
+        ChatRoomDTO.ChatRoomAllMessageResponseDto chatRoomMessages = messageService.getChatRoomMessages(authUser.getUser(), chatRoomId,lastMessageId);
         return ApiResponse.onSuccess(chatRoomMessages);
     }
 

@@ -14,6 +14,9 @@ import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -90,7 +93,7 @@ public class MessageService {
         });
     }
 
-    public ChatRoomDTO.ChatRoomAllMessageResponseDto getChatRoomMessages(User user,String chatRoomId){
+    public ChatRoomDTO.ChatRoomAllMessageResponseDto getChatRoomMessages(User user,String chatRoomId, String lastMessageId){
         // 채팅방 존재 검증
         ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
@@ -99,8 +102,16 @@ public class MessageService {
         if(!chatRoom.getUser().getId().equals(chatRoomUser.getId())){
             throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
         }
-        List<MessageEntity> messageEntityList = messageRepository.findByChatRoomId(chatRoom.getId());
+
+        PageRequest pageRequest = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<MessageEntity> messageEntityList;
+        if (lastMessageId == null) {
+            messageEntityList = messageRepository.findByChatRoomId(chatRoomId, pageRequest);
+        } else {
+            messageEntityList = messageRepository.findByChatRoomIdAndIdLessThan(chatRoomId, lastMessageId, pageRequest);
+        }
+
         List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).toList();
-        return ChatRoomDTO.ChatRoomAllMessageResponseDto.builder().chatRoomId(chatRoomId).allMessages(messageResponseDtos).build();
+        return ChatRoomDTO.convert(chatRoomId,messageResponseDtos,messageEntityList);
     }
 }
