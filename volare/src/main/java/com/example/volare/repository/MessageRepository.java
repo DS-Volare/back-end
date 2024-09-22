@@ -1,7 +1,6 @@
 package com.example.volare.repository;
 
 import com.example.volare.model.MessageEntity;
-import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

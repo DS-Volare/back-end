@@ -4,7 +4,6 @@ import com.example.volare.dto.UserDTO;
 import com.example.volare.global.common.auth.AuthRedisService;
 import com.example.volare.global.common.auth.JwtService;
 import com.example.volare.model.User;
-import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
