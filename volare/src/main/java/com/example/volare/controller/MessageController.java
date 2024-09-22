@@ -21,7 +21,7 @@ public class MessageController {
     private final MessageService messageService;
 
 
-    //메시지 송신 및 수신, /pub가 생략된 모습. 클라이언트 단에선 /pub/chatRoom/{chatRoomId}로 요청
+    //메시지 송신 및 수신, /pub가 생략된 모습. 클라이언트 단에선 /pub/chats/{chatRoomId}로 요청
     @MessageMapping("/chats/{chatRoomId}")
     public void sendMessage(@DestinationVariable("chatRoomId") String chatRoomId,
                             @Valid @RequestBody MessageDTO.MessageRequestDto question) {
