@@ -2,7 +2,7 @@ package com.example.volare.service;
 
 
 import com.example.volare.dto.ScriptDTO;
-import com.example.volare.dto.ScriptDetailsDTO;
+import com.example.volare.dto.StatisticsDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.model.Novel;
@@ -16,7 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import com.example.volare.model.ScriptScene;
 
@@ -70,6 +72,12 @@ public class ScriptService {
 
         // 동기식으로 DB에 저장
         scriptRepository.save(entity);
+
+        /* 스크립트 저장된 후, 스크립트가 속한 Novel의 수정 시간 갱신*/
+        novel.updateTimestamp(LocalDateTime.now());
+        novelRepository.save(novel);
+
+
         // DTO 계층 사용
         return ScriptDTO.EntityToDTO(entity);
     }
@@ -103,7 +111,7 @@ public class ScriptService {
     }
     */
 
-    public ScriptDetailsDTO getScriptDetails(Long scriptId) {
+    public StatisticsDTO.ScriptDetailsDTO getScriptInfo(Long scriptId) {
         // 스크립트 존재 여부 검증
         Script script = scriptRepository.findById(scriptId)
                 .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -123,11 +131,34 @@ public class ScriptService {
                 .collect(Collectors.toList());
 
         // DTO로 변환하여 반환
-        return ScriptDetailsDTO.builder()
+        return StatisticsDTO.ScriptDetailsDTO.builder()
                 .title(title)
                 .locations(locations)
                 .characters(characters)
                 .build();
+    }
+
+    public List<Map<String, Object>> updateScriptItems(List<Map<String, Object>> uList, int sceneNumber, int contentIndex, String character, String action, String dialog) {
+        for (Map<String, Object> item : uList) {
+            int currentSceneNumber = ((Number) item.get("sceneNumber")).intValue();
+            int currentContentIndex = ((Number) item.get("contentIndex")).intValue();
+
+            // sceneNumber와 contentIndex가 일치하는 항목을 찾아서 업데이트
+            if (currentSceneNumber == sceneNumber && currentContentIndex == contentIndex) {
+                if (character != null) {
+                    item.put("character", character);
+                }
+                if (action != null) {
+                    item.put("action", action);
+
+                }
+                if (dialog != null) {
+                    item.put("dialog", dialog);
+                }
+                break;
+            }
+        }
+        return uList;
     }
 
 }

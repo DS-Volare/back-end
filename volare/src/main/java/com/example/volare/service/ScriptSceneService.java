@@ -1,6 +1,6 @@
 package com.example.volare.service;
 
-import com.example.volare.dto.AppearanceStatisticsDTO;
+import com.example.volare.dto.StatisticsDTO;
 import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.model.Script;
@@ -22,7 +22,7 @@ public class ScriptSceneService {
     private final ScriptRepository scriptRepository;
     private final ScriptSceneRepository scriptSceneRepository;
 
-    public AppearanceStatisticsDTO getCharacterStatistics(Long scriptId) {
+    public StatisticsDTO.AppearanceRateDTO getCharacterStatistics(Long scriptId) {
 
         // 대본 존재 여부 검증
         Script script = scriptRepository.findById(scriptId).orElseThrow(()-> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -48,15 +48,15 @@ public class ScriptSceneService {
                 ));
 
         // 비율 계산
-        List<AppearanceStatisticsDTO.CharacterStatisticsDTO> characterRate = aggregatedCharacterCounts.entrySet().stream()
-                .map(entry -> AppearanceStatisticsDTO.CharacterStatisticsDTO.builder()
+        List<StatisticsDTO.AppearanceRateDTO.CharacterStatisticsDTO> characterRate = aggregatedCharacterCounts.entrySet().stream()
+                .map(entry -> StatisticsDTO.AppearanceRateDTO.CharacterStatisticsDTO.builder()
                         .characterName(entry.getKey())
                         .percentage((entry.getValue() * 100.0) / totalLines)
                         .build())
                 .collect(Collectors.toList());
 
         // DTO를 반환합니다.
-        return AppearanceStatisticsDTO.builder()
+        return StatisticsDTO.AppearanceRateDTO.builder()
                 .totalLines(totalLines)
                 .characterRate(characterRate)
                 .build();

@@ -1,9 +1,8 @@
 package com.example.volare.controller;
 
 
-import com.example.volare.dto.AppearanceStatisticsDTO;
 import com.example.volare.dto.ScriptDTO;
-import com.example.volare.dto.ScriptDetailsDTO;
+import com.example.volare.dto.StatisticsDTO;
 import com.example.volare.global.apiPayload.ApiResponse;
 import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.service.ScriptSceneService;
@@ -46,11 +45,9 @@ public class ScriptController {
     }
 
     @GetMapping("/{scriptId}/appearance-rate")
-    public ApiResponse<AppearanceStatisticsDTO> getCharacterStatistics(
-            @PathVariable Long scriptId, @AuthenticationPrincipal AuthUser authUser
-    ) {
-        AppearanceStatisticsDTO response = scriptSceneService.getCharacterStatistics(scriptId);
-        return ApiResponse.onSuccess(response);
+    public ApiResponse<StatisticsDTO.AppearanceRateDTO> getCharacterStatistics(
+            @PathVariable Long scriptId, @AuthenticationPrincipal AuthUser authUser) {
+        return ApiResponse.onSuccess(scriptSceneService.getCharacterStatistics(scriptId));
     }
 
 
@@ -66,8 +63,7 @@ public class ScriptController {
 
         List<Map<String, Object>> uList = (List<Map<String, Object>>) requestBody.get("u_list");
 
-        List<Map<String, Object>> updatedList = updateScriptItems(uList, sceneNumber, contentIndex, character, action, dialog);
-
+        List<Map<String, Object>> updatedList = scriptService.updateScriptItems(uList, sceneNumber, contentIndex, character, action, dialog);
 
         Map<String, Object> response = new HashMap<>();
         response.put("script_id", scriptId);
@@ -76,32 +72,10 @@ public class ScriptController {
         return ResponseEntity.ok(response);
     }
 
-    private List<Map<String, Object>> updateScriptItems(List<Map<String, Object>> uList, int sceneNumber, int contentIndex, String character, String action, String dialog) {
-        for (Map<String, Object> item : uList) {
-            int currentSceneNumber = ((Number) item.get("sceneNumber")).intValue();
-            int currentContentIndex = ((Number) item.get("contentIndex")).intValue();
 
-            // sceneNumber와 contentIndex가 일치하는 항목을 찾아서 업데이트
-            if (currentSceneNumber == sceneNumber && currentContentIndex == contentIndex) {
-                if (character != null) {
-                    item.put("character", character);
-                }
-                if (action != null) {
-                    item.put("action", action);
-
-                }
-                if (dialog != null) {
-                    item.put("dialog", dialog);
-                }
-                break;
-            }
-        }
-        return uList;
-    }
 
     @GetMapping("/{scriptId}/details")
-    public ApiResponse<ScriptDetailsDTO> getScriptDetails(@PathVariable Long scriptId) {
-        ScriptDetailsDTO scriptDetails = scriptService.getScriptDetails(scriptId);
-        return ApiResponse.onSuccess(scriptDetails);
+    public ApiResponse<StatisticsDTO.ScriptDetailsDTO> getScriptDetails(@PathVariable Long scriptId) {
+        return ApiResponse.onSuccess(scriptService.getScriptInfo(scriptId));
     }
 }
