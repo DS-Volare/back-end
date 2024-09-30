@@ -12,13 +12,13 @@ import com.example.volare.repository.MessageRepository;
 import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -92,15 +92,34 @@ public class MessageService {
             throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
         }
 
-        PageRequest pageRequest = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<MessageEntity> messageEntityList;
+        /* 9개의 메시지를 가져와서 8개만 사용할 것*/
+        PageRequest pageRequest = PageRequest.of(0, 9, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<MessageEntity> messageEntityList;
+
         if (lastMessageId == null) {
+            // 처음 요청
             messageEntityList = messageRepository.findByChatRoomId(chatRoomId, pageRequest);
         } else {
+            // 스크롤 요청: lastMessageId 이전 메시지
             messageEntityList = messageRepository.findByChatRoomIdAndIdLessThan(chatRoomId, lastMessageId, pageRequest);
         }
 
+        // 메시지 개수로 다음 메시지 여부 확인
+        boolean hasNext = messageEntityList.size() == 9;
+
+        // 마지막 1개는 제외하고 전달
+        if (hasNext) {
+            messageEntityList = messageEntityList.subList(0, 8);
+        }
+
+        // 최신순으로 조회된 메시지 리스트를 오래된 순으로 뒤집기
+        Collections.reverse(messageEntityList);
+
         List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).toList();
-        return ChatRoomDTO.convert(chatRoomId,messageResponseDtos,messageEntityList);
+        return ChatRoomDTO.ChatRoomAllMessageResponseDto.builder()
+                .chatRoomId(chatRoomId)
+                .allMessages(messageResponseDtos)
+                .hasNext(hasNext)
+                .build();
     }
 }
