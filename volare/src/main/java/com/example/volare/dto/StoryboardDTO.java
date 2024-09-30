@@ -1,4 +1,4 @@
-package com.example.volare.model;
+package com.example.volare.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

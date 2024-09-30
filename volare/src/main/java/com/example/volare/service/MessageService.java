@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -115,7 +116,7 @@ public class MessageService {
         // 최신순으로 조회된 메시지 리스트를 오래된 순으로 뒤집기
         Collections.reverse(messageEntityList);
 
-        List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).toList();
+        List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).collect(Collectors.toList());
         return ChatRoomDTO.ChatRoomAllMessageResponseDto.builder()
                 .chatRoomId(chatRoomId)
                 .allMessages(messageResponseDtos)
