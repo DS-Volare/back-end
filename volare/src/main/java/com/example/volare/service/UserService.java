@@ -1,13 +1,11 @@
 package com.example.volare.service;
 
-import com.example.volare.dto.NovelDTO;
-import com.example.volare.dto.UserDTO;
+import com.example.volare.dto.*;
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
+import com.example.volare.global.apiPayload.exception.GeneralException;
 import com.example.volare.global.common.auth.AuthRedisService;
 import com.example.volare.global.common.auth.JwtService;
-import com.example.volare.model.Novel;
-import com.example.volare.model.Script;
-import com.example.volare.model.StoryBoardCut;
-import com.example.volare.model.User;
+import com.example.volare.model.*;
 import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
 import com.example.volare.repository.StoryBoardRepository;
@@ -35,8 +33,11 @@ public class UserService {
     private final ScriptRepository scriptRepository;
     private final NovelRepository novelRepository;
 
-    //TODO: falLImgURL s3 이미지 링크로 수정 또는 FE 협의 후 null값 전달
-    private final static  String falLImgURL = "로고url";
+    private final static  String falLImgURL = null;
+
+    private final NovelService novelService;
+    private final ScriptService scriptService;
+    private final StoryboardService storyboardService;
 
     public void signOut(String accessToken, String refreshToken) {
         long expiredAccessTokenTime = jwtService.getClaims((accessToken)).getExpiration().getTime() - new Date().getTime();
@@ -93,5 +94,30 @@ public class UserService {
                 .updatedAt(novel.getUpdatedAt().format(formatter))
                 .build();
     }
+
+    public ConvertDetailDTO getUserConvertDetail(User user, String  novelId) {
+
+        // 소설 조회
+        Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralException(ErrorStatus._BAD_REQUEST));
+        NovelDTO.NovelDetailResponseDTO novelDetail = novelService.getNovelDetail(user, novelId);
+
+
+        // 스크립트 조회
+        Script script = scriptRepository.findByNovel(novel).orElse(null);
+        ConvertWrapper<ScriptDTO.ScriptDetailResponseDTO> scriptDetailWrapper = Optional.ofNullable(script)
+                .map(s -> new ConvertWrapper<>(scriptService.getScriptDetail(s.getId())))
+                .orElse(new ConvertWrapper<>(false,"사용자가 과거의 생성한 대본 내역이 없습니다."));
+
+
+        //스토리보드 조회
+        StoryBoard storyBoard = storyBoardRepository.findByScript(script).orElse(null);
+        ConvertWrapper<StoryboardDTO.Response> storyBoardDetailWrapper = Optional.ofNullable(storyBoard)
+                .map(sb -> new ConvertWrapper<>(storyboardService.getStoryBoardDetail(sb.getId())))
+                .orElse(new ConvertWrapper<>(false,"사용자가 과거의 생성한 스토리보드 내역이 없습니다."));
+
+        return ConvertDetailDTO.fromDTO(novelDetail,scriptDetailWrapper,storyBoardDetailWrapper);
+
+    }
+
 
 }

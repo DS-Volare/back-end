@@ -111,6 +111,7 @@ public class ScriptDTO {
     @Builder
     public static class ScriptDetailResponseDTO{
         private List<Script> script;
+        private Long scriptId;
 
         @Builder
         @AllArgsConstructor
@@ -211,6 +212,7 @@ public class ScriptDTO {
 
         // 최종적으로 ScriptDetailResponseDTO에 Script 리스트를 포함하여 반환
         return ScriptDetailResponseDTO.builder()
+                .scriptId(script.getId())
                 .script(scripts)
                 .build();
     }

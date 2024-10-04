@@ -23,7 +23,7 @@ public class Novel extends BaseEntity {
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "novel_id")
-    private Long Id;
+    private String  Id;
     private String title; // 소설 제목
 
     @Column(name = "story_text", columnDefinition = "TEXT", nullable = false)

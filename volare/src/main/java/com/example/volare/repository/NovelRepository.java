@@ -9,6 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface NovelRepository extends JpaRepository<Novel,String> {
-    Optional<Novel> findById(Long novelId);
+    Optional<Novel> findById(String  novelId);
     Page<Novel> findByUser(User user, Pageable pageable);
 }

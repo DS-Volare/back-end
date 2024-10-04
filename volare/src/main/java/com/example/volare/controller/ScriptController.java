@@ -36,7 +36,7 @@ public class ScriptController {
 
     @PostMapping("/{novelId}")
     public ApiResponse<ScriptDTO.NovelToStoryScriptResponseDTO> saveData(
-            @PathVariable Long novelId,
+            @PathVariable String  novelId,
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody ScriptDTO.ScriptRequestDTO req) throws JsonProcessingException {
         ScriptDTO.NovelToStoryScriptResponseDTO storyScript = scriptService.saveStoryScript(novelId, authUser.getUser(), req);

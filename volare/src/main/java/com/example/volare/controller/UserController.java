@@ -1,16 +1,12 @@
 package com.example.volare.controller;
 
+import com.example.volare.dto.ConvertDetailDTO;
 import com.example.volare.dto.NovelDTO;
 import com.example.volare.dto.UserDTO;
 import com.example.volare.global.apiPayload.ApiResponse;
-import com.example.volare.global.apiPayload.code.status.ErrorStatus;
-import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.global.common.auth.JwtService;
 import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.global.common.auth.model.TokenDTO;
-import com.example.volare.service.NovelService;
-import com.example.volare.service.ScriptService;
-import com.example.volare.service.StoryboardService;
 import com.example.volare.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -27,9 +23,6 @@ public class UserController {
     private final JwtService jwtService;
     private final UserService userService;
 
-    private final NovelService novelService;
-    private final ScriptService scriptService;
-    private final StoryboardService storyboardService;
 
     // 로그아웃
     @PostMapping("/sign-out")
@@ -73,22 +66,8 @@ public class UserController {
 
     // 변환 내역 상세 조회
     @GetMapping("/conversion-details/{id}")
-    public ApiResponse<?> getConvertDetail( @AuthenticationPrincipal AuthUser authUser,@PathVariable Long id, @RequestParam String type) {
-        switch (type) {
-            case "N":
-                // 소설 정보조회 대한 처리
-                return ApiResponse.onSuccess(novelService.getNovelDetail(authUser.getUser(),id));
-
-            case "S":
-                // 대본 정보조회 대한 처리
-                return ApiResponse.onSuccess(scriptService.getScriptDetail(id));
-
-            case "SB":
-                // 스토리보드 정보조회 대한 처리
-                return ApiResponse.onSuccess(storyboardService.getStoryBoardDetail(id));
-            default:
-                throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
-        }
+    public ApiResponse<ConvertDetailDTO> getConvertDetail(@AuthenticationPrincipal AuthUser authUser, @PathVariable String id) {
+        return ApiResponse.onSuccess(userService.getUserConvertDetail(authUser.getUser(),id));
     }
 
 

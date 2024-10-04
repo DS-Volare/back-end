@@ -20,7 +20,7 @@ public class NovelService {
 
     // 원본 소설 저장
     @Transactional
-    public Long saveNovel(User user, NovelDTO.NovelRequestDTO novel){
+    public String  saveNovel(User user, NovelDTO.NovelRequestDTO novel){
 
         Novel saveNovel = Novel.builder()
                 .title(novel.getTitle())
@@ -34,7 +34,7 @@ public class NovelService {
     }
 
     // 소설정보 조회
-    public NovelDTO.NovelDetailResponseDTO getNovelDetail(User user,Long novelId){
+    public NovelDTO.NovelDetailResponseDTO getNovelDetail(User user,String  novelId){
         Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
         return NovelDTO.NovelDetailResponseDTO.builder()
                 .title(novel.getTitle())

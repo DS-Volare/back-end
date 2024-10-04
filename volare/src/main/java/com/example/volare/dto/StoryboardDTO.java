@@ -1,6 +1,7 @@
 package com.example.volare.dto;
 
 import com.example.volare.model.StoryBoard;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -74,6 +75,8 @@ public class StoryboardDTO {
     public static class Response {
         @JsonProperty("scene")
         private List<Scene> scene;
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private Long storyBoardId;
 
         @Getter
         @NoArgsConstructor
@@ -132,6 +135,7 @@ public class StoryboardDTO {
         // 최종적으로 Response에 Scene을 포함하여 반환
         return Response.builder()
                 .scene(Collections.singletonList(scene)) // 단일 Scene을 포함
+                .storyBoardId(storyBoard.getId())
                 .build();
     }
 }
