@@ -10,10 +10,12 @@ import com.example.volare.service.ScriptService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,5 +79,11 @@ public class ScriptController {
     @GetMapping("/{scriptId}/details")
     public ApiResponse<StatisticsDTO.ScriptDetailsDTO> getScriptDetails(@PathVariable Long scriptId) {
         return ApiResponse.onSuccess(scriptService.getScriptInfo(scriptId));
+    }
+
+    // Script ID로 txt 파일 다운로드
+    @GetMapping("/{scriptId}/download")
+    public ResponseEntity<InputStreamResource> downloadScriptTxtFile(@PathVariable Long scriptId) throws IOException {
+        return scriptService.downloadScriptTxtFile(scriptId);
     }
 }
