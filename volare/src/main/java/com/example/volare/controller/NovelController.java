@@ -21,16 +21,8 @@ public class NovelController {
             @AuthenticationPrincipal AuthUser authUser,
             @RequestBody NovelDTO.NovelRequestDTO req )
     {
-        String saveNovel = novelService.saveNovel(authUser.getUser(), req);
+        String  saveNovel = novelService.saveNovel(authUser.getUser(), req);
         return ApiResponse.onSuccess(new NovelDTO.NovelResponseDTO(saveNovel));
     }
 
-    // 유저별 소설 변환 내역 조회
-    @GetMapping("")
-    public ApiResponse<NovelDTO.UserConvertDTO> getMyConvertList(
-            @AuthenticationPrincipal AuthUser authUser, @RequestParam(required = false, defaultValue = "0", value = "pageNo") int pageNo)
-    {
-        NovelDTO.UserConvertDTO convertList = novelService.getConvertList(authUser.getUser(),pageNo);
-        return ApiResponse.onSuccess(convertList);
-    }
 }

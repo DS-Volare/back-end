@@ -34,6 +34,7 @@ public class ScriptDTO {
          @NoArgsConstructor
          @AllArgsConstructor
          public static class ContentDTO {
+             private String content;
              private String character;
              private String action;
              private String dialog;
@@ -87,12 +88,14 @@ public class ScriptDTO {
                  @NoArgsConstructor
                  @Getter
                  public static class Content {
-                     private String action;
-                     private String character;
-                     private String dialog;
-
-                     // TODO: type 필요성 확인
                      @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String content;
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String action;
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String character;
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String dialog;
                      private String type;
                  }
              }
@@ -107,6 +110,41 @@ public class ScriptDTO {
      }
 
 
+    @Getter
+    @Builder
+    public static class ScriptDetailResponseDTO{
+        private List<Script> script;
+        private Long scriptId;
+
+        @Builder
+        @AllArgsConstructor
+        @NoArgsConstructor
+        @Getter
+        public static class Script {
+            private int scene_num;
+            private String location;
+            private String props;
+            private List<Content> content;
+
+            @Builder
+            @AllArgsConstructor
+            @NoArgsConstructor
+            @Getter
+            public static class Content {
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                private String content;
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                private String action;
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                private String character;
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                private String dialog;
+                private String type;
+            }
+        }
+    }
+
+
 
 //CONVERTER
      public static NovelToStoryScriptResponseDTO EntityToDTO(Script scriptEntity) {
@@ -118,10 +156,12 @@ public class ScriptDTO {
                                          .scene_num(scene.getSceneNum())
                                          .props(scene.getProps())
                                          .content(scene.getContents().stream()
-                                                 .map(content -> ScriptDTO.NovelToStoryScriptResponseDTO.Script.Scene.Content.builder()
+                                                 .map(content -> NovelToStoryScriptResponseDTO.Script.Scene.Content.builder()
+                                                         .content(content.getContent())
                                                          .action(content.getAction())
                                                          .character(content.getCharacter())
                                                          .dialog(content.getDialog())
+                                                         .type(content.getType())
                                                          .build()
                                                  )
                                                  .collect(Collectors.toList())
@@ -148,9 +188,11 @@ public class ScriptDTO {
                                  .props(sceneDTO.getProps())
                                  .contents(sceneDTO.getContent().stream()
                                          .map(content ->  ScriptScene.Content.builder()
+                                                 .content((content.getContent()))
                                                  .action(content.getAction())
                                                  .character(content.getCharacter())
                                                  .dialog(content.getDialog())
+                                                 .type(content.getType())
                                                  .build()
                                          )
                                          .collect(Collectors.toList())
@@ -164,6 +206,33 @@ public class ScriptDTO {
          return script;
      }
 
+    public static ScriptDetailResponseDTO scriptConvertToDto(Script script) {
+        // Script 엔티티의 scene 리스트를 변환
+        List<ScriptDetailResponseDTO.Script> scripts = script.getScriptScenes().stream()
+                .map(scene -> ScriptDetailResponseDTO.Script.builder()
+                        .content(scene.getContents().stream() // Script에서 Content 변환
+                                .map(content -> ScriptDetailResponseDTO.Script.Content.builder()
+                                        .action(content.getAction())   // 엔티티의 action 정보
+                                        .character(content.getCharacter()) // 캐릭터 정보
+                                        .dialog(content.getDialog())   // 대사 정보
+                                        .type(content.getType())
+                                        .content(content.getContent())
+                                        .build())
+                                .collect(Collectors.toList()))         // Content 리스트로 변환
+                        .location(scene.getLocation())                 // Location 설정
+                        .scene_num(scene.getSceneNum())                // Scene 번호 설정
+                        .props(scene.getProps())                       // 소품 정보 설정
+                        .build())
+                .collect(Collectors.toList());
 
- }
+        // 최종적으로 ScriptDetailResponseDTO에 Script 리스트를 포함하여 반환
+        return ScriptDetailResponseDTO.builder()
+                .scriptId(script.getId())
+                .script(scripts)
+                .build();
+    }
+
+
+
+}
 

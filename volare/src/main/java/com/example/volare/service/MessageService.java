@@ -6,24 +6,22 @@ import com.example.volare.global.apiPayload.code.status.ErrorStatus;
 import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.model.ChatRoomEntity;
 import com.example.volare.model.MessageEntity;
-import com.example.volare.model.Novel;
 import com.example.volare.model.User;
 import com.example.volare.repository.ChatRoomRepository;
 import com.example.volare.repository.MessageRepository;
-import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,7 +32,6 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
-    private final NovelRepository novelRepository;
 
     // 메시지 DB 저장
     @Transactional
@@ -48,13 +45,6 @@ public class MessageService {
                 .messagetype(Objects.equals(message.getMessageType(), MessageEntity.MessageType.QUESTION.name()) ? MessageEntity.MessageType.QUESTION : MessageEntity.MessageType.GPT)
                 .build();
         MessageEntity chat = messageRepository.save(saveMessage);
-
-        /* 메시지가 저장된 후, 채팅방이 속한 Novel의 수정 시간 갱신*/
-        Novel novel = chatRoom.getScript().getNovel();
-        novel.updateTimestamp(LocalDateTime.now());
-        novelRepository.save(novel);
-
-        // STOMP 프로토콜을 사용하여 해당 채팅방의 구독자들에게 전송
         return MessageDTO.fromEntity(chat);
     }
 
@@ -70,27 +60,27 @@ public class MessageService {
 
             log.info("Chat room found");
 
-            // GPT 요청 DTO 생성
-            MessageDTO.MessageGPTRequestDto messageGPTRequestDto = MessageDTO.MessageGPTRequestDto
-                    .builder()
-                    .message(message.getMessage())
-                    .context(chatRoomRepository.findStoryTextByChatRoomId(chatRoomId))
-                    .build();
+                    // GPT 요청 DTO 생성
+                    MessageDTO.MessageGPTRequestDto messageGPTRequestDto = MessageDTO.MessageGPTRequestDto
+                            .builder()
+                            .message(message.getMessage())
+                            .context(chatRoomRepository.findStoryTextByChatRoomId(chatRoomId))
+                            .build();
 
             log.info("Calling GPT with request");
 
-            // WebClient 비동기 호출
-            return webClientService.responseGPT(messageGPTRequestDto)
-                    .flatMap(responseGPT -> {
-                        log.info("Received GPT response");
-                        // 메시지 엔티티 생성
-                        MessageEntity messageEntity = MessageDTO.fromDto(responseGPT, chatRoom, MessageEntity.MessageType.GPT);
+                    // WebClient 비동기 호출
+                    return webClientService.responseGPT(messageGPTRequestDto)
+                            .flatMap(responseGPT -> {
+                                log.info("Received GPT response");
+                                // 메시지 엔티티 생성
+                                MessageEntity messageEntity = MessageDTO.fromDto(responseGPT, chatRoom, MessageEntity.MessageType.GPT);
 
-                        /// 메시지 저장 후 저장된 메시지 엔티티 반환
-                        return Mono.fromCallable(() -> messageRepository.save(messageEntity))
-                                .map(MessageDTO::fromEntity); // 저장된 메시지 엔티티로부터 DTO 반환
-                    });
-        });
+                                /// 메시지 저장 후 저장된 메시지 엔티티 반환
+                                return Mono.fromCallable(() -> messageRepository.save(messageEntity))
+                                        .map(MessageDTO::fromEntity); // 저장된 메시지 엔티티로부터 DTO 반환
+                            });
+                });
     }
 
     public ChatRoomDTO.ChatRoomAllMessageResponseDto getChatRoomMessages(User user,String chatRoomId, String lastMessageId){
@@ -103,15 +93,34 @@ public class MessageService {
             throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
         }
 
-        PageRequest pageRequest = PageRequest.of(0, 8, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<MessageEntity> messageEntityList;
+        /* 9개의 메시지를 가져와서 8개만 사용할 것*/
+        PageRequest pageRequest = PageRequest.of(0, 9, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<MessageEntity> messageEntityList;
+
         if (lastMessageId == null) {
+            // 처음 요청
             messageEntityList = messageRepository.findByChatRoomId(chatRoomId, pageRequest);
         } else {
+            // 스크롤 요청: lastMessageId 이전 메시지
             messageEntityList = messageRepository.findByChatRoomIdAndIdLessThan(chatRoomId, lastMessageId, pageRequest);
         }
 
-        List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).toList();
-        return ChatRoomDTO.convert(chatRoomId,messageResponseDtos,messageEntityList);
+        // 메시지 개수로 다음 메시지 여부 확인
+        boolean hasNext = messageEntityList.size() == 9;
+
+        // 마지막 1개는 제외하고 전달
+        if (hasNext) {
+            messageEntityList = messageEntityList.subList(0, 8);
+        }
+
+        // 최신순으로 조회된 메시지 리스트를 오래된 순으로 뒤집기
+        Collections.reverse(messageEntityList);
+
+        List<MessageDTO.MessageResponseDto> messageResponseDtos = messageEntityList.stream().map(MessageDTO::fromEntity).collect(Collectors.toList());
+        return ChatRoomDTO.ChatRoomAllMessageResponseDto.builder()
+                .chatRoomId(chatRoomId)
+                .allMessages(messageResponseDtos)
+                .hasNext(hasNext)
+                .build();
     }
 }
