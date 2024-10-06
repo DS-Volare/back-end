@@ -50,8 +50,10 @@ public class ScriptScene {
     @NoArgsConstructor(access = PROTECTED)
     @AllArgsConstructor
     public static class Content{
+        private String content;
         private String action; // 비대사
         private String character; //발화자
         private String dialog; // 대사
+        private String type;
     }
 }

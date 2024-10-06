@@ -1,5 +1,7 @@
 package com.example.volare.controller;
 
+import com.example.volare.dto.ConvertDetailDTO;
+import com.example.volare.dto.NovelDTO;
 import com.example.volare.dto.UserDTO;
 import com.example.volare.global.apiPayload.ApiResponse;
 import com.example.volare.global.common.auth.JwtService;
@@ -20,6 +22,7 @@ public class UserController {
 
     private final JwtService jwtService;
     private final UserService userService;
+
 
     // 로그아웃
     @PostMapping("/sign-out")
@@ -49,4 +52,23 @@ public class UserController {
     public ApiResponse<UserDTO> retrieveUserInfo(@AuthenticationPrincipal AuthUser authUser){
         return ApiResponse.onSuccess(userService.getUserInfo(authUser.getUser()));
     }
+
+    // 유저별 소설 변환 내역 조회
+    @GetMapping("/conversion")
+    public ApiResponse<NovelDTO.UserConvertDTO> getMyConvertList
+    (
+            @AuthenticationPrincipal AuthUser authUser, @RequestParam(required = false, defaultValue = "0", value = "pageNo") int pageNo
+    ) {
+        NovelDTO.UserConvertDTO convertList = userService.getConvertList(authUser.getUser(),pageNo);
+        return ApiResponse.onSuccess(convertList);
+    }
+
+
+    // 변환 내역 상세 조회
+    @GetMapping("/conversion-details/{id}")
+    public ApiResponse<ConvertDetailDTO> getConvertDetail(@AuthenticationPrincipal AuthUser authUser, @PathVariable String id) {
+        return ApiResponse.onSuccess(userService.getUserConvertDetail(authUser.getUser(),id));
+    }
+
+
 }

@@ -1,6 +1,8 @@
 package com.example.volare.service;
 
 import com.example.volare.dto.StoryboardDTO;
+import com.example.volare.global.apiPayload.code.status.ErrorStatus;
+import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.StoryBoard;
@@ -26,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StoryboardService {
 
-    private final String aiServerUrl = "http://75.63.212.242:44809/convert_storyboard/";
+    private final String aiServerUrl = "http://116.109.105.142:30156/convert_storyboard/";
     private final ScriptRepository scriptRepository;
     private final StoryBoardRepository storyBoardRepository;
     private final NovelRepository novelRepository;
@@ -70,7 +72,7 @@ public class StoryboardService {
         List<StoryBoard> storyBoards = storyboardResponse.getScene().stream()
                 .map(scene -> StoryBoard.builder()
                         .script(script)
-                        .sceneNum(String.valueOf(scene.getScene_num()))
+                        .sceneNum(scene.getScene_num())
                         .locate(scene.getLocation())
                         .time(scene.getTime())
                         .summary(scene.getCuts().stream()
@@ -89,4 +91,11 @@ public class StoryboardService {
 
         return storyboardResponse;
     }
+
+    // 스토리보드 정보조회
+    public StoryboardDTO.Response getStoryBoardDetail(Long storyboardId){
+        StoryBoard storyBoard = storyBoardRepository.findById(storyboardId).orElseThrow(()-> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return StoryboardDTO.storyBoardConvertToDto(storyBoard);
+    }
+
 }

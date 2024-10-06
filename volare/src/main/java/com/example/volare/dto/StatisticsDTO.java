@@ -32,7 +32,7 @@ public class StatisticsDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ScriptDetailsDTO {
+    public static class MindMapDTO {
         private String title;
         private List<String> locations;
         private List<String> characters;

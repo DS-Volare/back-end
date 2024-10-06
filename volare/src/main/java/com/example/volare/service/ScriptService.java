@@ -55,11 +55,11 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(1) ->비동기 호출 비동기 저장- 완료 후 return
     /*
-    public Mono<Script> saveStoryScript(String novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public Mono<Script> saveStoryScript(String  novelId, User user,ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
         //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
-        Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertStoryBord(changeNovel);
+        Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertScript(changeNovel);
         return novelToStoryScriptResponseDTOMono
                 .map(this::convertToEntity)
                 .flatMap(entity -> Mono.fromCallable(() -> scriptRepository.save(entity))
@@ -70,12 +70,12 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(2) -> 동기식 저장 , 동기식 호출
 
-    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String  novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // Novel
         Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // WebClient 호출을 동기식으로 처리
-        ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
+        ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertScript(changeNovel).block();
 
         // 결과+ 등장인물 정보 엔티티 변환
         Script entity = ScriptDTO.convertToEntity(novel,novelToStoryScriptResponseDTO, changeNovel.getCandidates());
@@ -96,13 +96,13 @@ public class ScriptService {
 
     //TODO: 속도 테스트를 위함(3) -> 동기적 호출, 비동기적 저장 - 완료 전 return
     /*
-    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public ScriptDTO.NovelToStoryScriptResponseDTO saveStoryScript(String  novelId, User user, ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
         // User 검증 로직 -  현재 팀 계정을 운영하지 않음으로 user검증은 JWT로 회원유저인지 확인하는 로직으로 대체
         // Novel
         novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // 웹 클라이언트 호출을 동기적으로 처리
-        ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();
+        ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertScript(changeNovel).block();
 
         // 비동기적으로 저장 로직 수행
         Mono.fromCallable(() -> {
@@ -121,7 +121,7 @@ public class ScriptService {
     }
     */
 
-    public StatisticsDTO.ScriptDetailsDTO getScriptInfo(Long scriptId) {
+    public StatisticsDTO.MindMapDTO getScriptInfo(Long scriptId) {
         // 스크립트 존재 여부 검증
         Script script = scriptRepository.findById(scriptId)
                 .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -141,7 +141,7 @@ public class ScriptService {
                 .collect(Collectors.toList());
 
         // DTO로 변환하여 반환
-        return StatisticsDTO.ScriptDetailsDTO.builder()
+        return StatisticsDTO.MindMapDTO.builder()
                 .title(title)
                 .locations(locations)
                 .characters(characters)
@@ -170,6 +170,7 @@ public class ScriptService {
         }
         return uList;
     }
+
 
     // Script 데이터를 txt 파일로 변환하는 메서드 추가
     public Path generateScriptTxtFile(Long scriptId) throws IOException {
@@ -221,6 +222,15 @@ public class ScriptService {
                 .contentType(MediaType.TEXT_PLAIN)
                 .contentLength(filePath.toFile().length())
                 .body(resource);
+    }
+
+
+
+    // 대본 정보조회
+    public ScriptDTO.ScriptDetailResponseDTO getScriptDetail(Long scriptId){
+        Script script = scriptRepository.findById(scriptId)
+                .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        return ScriptDTO.scriptConvertToDto(script);
     }
 
 }
