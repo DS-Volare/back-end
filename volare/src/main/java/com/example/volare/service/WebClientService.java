@@ -19,7 +19,8 @@ public class WebClientService {
 
     // webClient 기본 설정
     private final WebClient webClient = WebClient.builder()
-            .baseUrl("http://localhost:5000")
+//            .baseUrl("http://localhost:5000")
+            .baseUrl("http://116.109.105.142:30156")
             .clientConnector(new ReactorClientHttpConnector(
                     HttpClient.create().followRedirect(true)
             ))
@@ -27,7 +28,7 @@ public class WebClientService {
             .build();
 
     // 소설 변환 api 호출
-    public Mono<ScriptDTO.NovelToStoryScriptResponseDTO> convertStoryBord(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
+    public Mono<ScriptDTO.NovelToStoryScriptResponseDTO> convertScript(ScriptDTO.ScriptRequestDTO changeNovel) throws JsonProcessingException {
 
         return this.webClient.post()
                 .uri("/convert_script")

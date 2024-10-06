@@ -34,6 +34,7 @@ public class ScriptDTO {
          @NoArgsConstructor
          @AllArgsConstructor
          public static class ContentDTO {
+             private String content;
              private String character;
              private String action;
              private String dialog;
@@ -87,12 +88,14 @@ public class ScriptDTO {
                  @NoArgsConstructor
                  @Getter
                  public static class Content {
-                     private String action;
-                     private String character;
-                     private String dialog;
-
-                     // TODO: type 필요성 확인
                      @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String content;
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String action;
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String character;
+                     @JsonInclude(JsonInclude.Include.NON_NULL)
+                     private String dialog;
                      private String type;
                  }
              }
@@ -128,9 +131,15 @@ public class ScriptDTO {
             @NoArgsConstructor
             @Getter
             public static class Content {
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                private String content;
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 private String action;
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 private String character;
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 private String dialog;
+                private String type;
             }
         }
     }
@@ -147,10 +156,12 @@ public class ScriptDTO {
                                          .scene_num(scene.getSceneNum())
                                          .props(scene.getProps())
                                          .content(scene.getContents().stream()
-                                                 .map(content -> ScriptDTO.NovelToStoryScriptResponseDTO.Script.Scene.Content.builder()
+                                                 .map(content -> NovelToStoryScriptResponseDTO.Script.Scene.Content.builder()
+                                                         .content(content.getContent())
                                                          .action(content.getAction())
                                                          .character(content.getCharacter())
                                                          .dialog(content.getDialog())
+                                                         .type(content.getType())
                                                          .build()
                                                  )
                                                  .collect(Collectors.toList())
@@ -177,9 +188,11 @@ public class ScriptDTO {
                                  .props(sceneDTO.getProps())
                                  .contents(sceneDTO.getContent().stream()
                                          .map(content ->  ScriptScene.Content.builder()
+                                                 .content((content.getContent()))
                                                  .action(content.getAction())
                                                  .character(content.getCharacter())
                                                  .dialog(content.getDialog())
+                                                 .type(content.getType())
                                                  .build()
                                          )
                                          .collect(Collectors.toList())
@@ -202,6 +215,8 @@ public class ScriptDTO {
                                         .action(content.getAction())   // 엔티티의 action 정보
                                         .character(content.getCharacter()) // 캐릭터 정보
                                         .dialog(content.getDialog())   // 대사 정보
+                                        .type(content.getType())
+                                        .content(content.getContent())
                                         .build())
                                 .collect(Collectors.toList()))         // Content 리스트로 변환
                         .location(scene.getLocation())                 // Location 설정

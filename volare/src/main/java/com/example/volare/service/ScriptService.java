@@ -49,7 +49,7 @@ public class ScriptService {
         // Novel
         //novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
-        Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertStoryBord(changeNovel);
+        Mono<ScriptDTO.NovelToStoryScriptResponseDTO> novelToStoryScriptResponseDTOMono = webClientService.convertScript(changeNovel);
         return novelToStoryScriptResponseDTOMono
                 .map(this::convertToEntity)
                 .flatMap(entity -> Mono.fromCallable(() -> scriptRepository.save(entity))
@@ -65,7 +65,7 @@ public class ScriptService {
         Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // WebClient 호출을 동기식으로 처리
-        ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertStoryBord(changeNovel).block();
+        ScriptDTO.NovelToStoryScriptResponseDTO novelToStoryScriptResponseDTO = webClientService.convertScript(changeNovel).block();
 
         // 결과+ 등장인물 정보 엔티티 변환
         Script entity = ScriptDTO.convertToEntity(novel,novelToStoryScriptResponseDTO, changeNovel.getCandidates());
@@ -92,7 +92,7 @@ public class ScriptService {
         novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // 웹 클라이언트 호출을 동기적으로 처리
-        ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertStoryBord(changeNovel).block();
+        ScriptDTO.NovelToStoryScriptResponseDTO responseDTO = webClientService.convertScript(changeNovel).block();
 
         // 비동기적으로 저장 로직 수행
         Mono.fromCallable(() -> {

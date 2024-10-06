@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StoryboardService {
 
-    private final String aiServerUrl = "http://75.63.212.242:44809/convert_storyboard/";
+    private final String aiServerUrl = "http://116.109.105.142:30156/convert_storyboard/";
     private final ScriptRepository scriptRepository;
     private final StoryBoardRepository storyBoardRepository;
     private final NovelRepository novelRepository;
