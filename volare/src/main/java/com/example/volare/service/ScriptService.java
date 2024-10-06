@@ -14,11 +14,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import com.example.volare.model.ScriptScene;
 
@@ -162,10 +172,65 @@ public class ScriptService {
     }
 
 
+    // Script 데이터를 txt 파일로 변환하는 메서드 추가
+    public Path generateScriptTxtFile(Long scriptId) throws IOException {
+        // Script 조회
+        Optional<Script> optionalScript = scriptRepository.findById(scriptId);
+        if (optionalScript.isEmpty()) {
+            throw new GeneralHandler(ErrorStatus._BAD_REQUEST);
+        }
+
+        Script script = optionalScript.get();
+
+        // 파일 경로 설정
+        Path filePath = Paths.get("script_" + scriptId + ".txt");
+
+        // Script 데이터를 텍스트 파일에 쓰기
+        StringBuilder sb = new StringBuilder();
+        sb.append("Script ID: ").append(script.getId()).append("\n");
+        sb.append("Novel Title: ").append(script.getNovel().getTitle()).append("\n");
+        sb.append("Type: ").append(script.getType()).append("\n");
+        sb.append("Script File Content: \n").append(script.getScriptFile()).append("\n");
+        sb.append("Characters: \n");
+
+        for (String character : script.getCharacters()) {
+            sb.append("- ").append(character).append("\n");
+        }
+
+        sb.append("Scenes: \n");
+        for (ScriptScene scene : script.getScriptScenes()) {
+            sb.append("Scene Location: ").append(scene.getLocation()).append("\n");
+            // 필요한 경우 더 많은 Scene 정보를 출력할 수 있습니다.
+        }
+
+        Files.write(filePath, sb.toString().getBytes());
+
+        return filePath;
+    }
+
+    // 파일 다운로드를 위한 API 응답 처리
+    public ResponseEntity<InputStreamResource> downloadScriptTxtFile(Long scriptId) throws IOException {
+        // 텍스트 파일 생성
+        Path filePath = generateScriptTxtFile(scriptId);
+
+        // 파일을 InputStream으로 읽어들임
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(filePath.toFile()));
+
+        // 파일 다운로드 응답 반환
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + filePath.getFileName())
+                .contentType(MediaType.TEXT_PLAIN)
+                .contentLength(filePath.toFile().length())
+                .body(resource);
+    }
+
+
+
     // 대본 정보조회
     public ScriptDTO.ScriptDetailResponseDTO getScriptDetail(Long scriptId){
         Script script = scriptRepository.findById(scriptId)
                 .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
         return ScriptDTO.scriptConvertToDto(script);
     }
+
 }
