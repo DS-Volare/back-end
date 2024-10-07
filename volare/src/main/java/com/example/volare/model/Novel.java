@@ -21,7 +21,8 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(name = "novels")
 public class Novel extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "novel_id")
     private String  Id;
     private String title; // 소설 제목
