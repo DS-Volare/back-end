@@ -19,7 +19,6 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,9 +32,10 @@ public class StoryboardService {
     private final StoryBoardRepository storyBoardRepository;
     private final NovelRepository novelRepository;
 
+    // AI 모델에 요청을 보내서 스토리보드를 생성하는 메소드
     public StoryboardDTO.Response generateStoryboard(StoryboardDTO.Request request) {
         RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setMessageConverters(Collections.singletonList(new MappingJackson2HttpMessageConverter()));
+        restTemplate.setMessageConverters(List.of(new MappingJackson2HttpMessageConverter()));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -61,14 +61,37 @@ public class StoryboardService {
         }
     }
 
+    // 스토리보드를 생성하고 데이터베이스에 저장하는 메소드
     public StoryboardDTO.Response saveStoryboard(Long scriptId, StoryboardDTO.Request request) {
         Script script = scriptRepository.findById(scriptId)
                 .orElseThrow(() -> new RuntimeException("Script not found with id: " + scriptId));
 
-        // Generate the storyboard
-        StoryboardDTO.Response storyboardResponse = generateStoryboard(request);
+        // '지문' 타입의 씬을 제외하고 AI 모델에 전달할 씬을 필터링
+        List<StoryboardDTO.Request.Script.Scene> filteredScenes = request.getScript().getScene().stream()
+                .map(scene -> StoryboardDTO.Request.Script.Scene.builder()
+                        .scene_num(scene.getScene_num())
+                        .location(scene.getLocation())
+                        .content(scene.getContent().stream()
+                                .filter(content -> !"지문".equals(content.getType())) // '지문' 타입 필터링
+                                .collect(Collectors.toList())) // 필터링된 컨텐츠 추가
+                        .build())
+                .collect(Collectors.toList());
 
-        // Convert the DTO to entities and save to the database
+        // 필터링된 Script 객체 생성
+        StoryboardDTO.Request.Script filteredScript = StoryboardDTO.Request.Script.builder()
+                .scene(filteredScenes)
+                .build();
+
+        // 새로운 요청 객체 생성 (필터링된 씬 사용)
+        StoryboardDTO.Request filteredRequest = StoryboardDTO.Request.builder()
+                .scriptId(request.getScriptId())
+                .script(filteredScript)
+                .build();
+
+        // 필터링된 씬으로 AI 모델에 스토리보드 생성 요청
+        StoryboardDTO.Response storyboardResponse = generateStoryboard(filteredRequest);
+
+        // AI에서 반환된 storyboardResponse 데이터를 사용하여 스토리보드 저장
         List<StoryBoard> storyBoards = storyboardResponse.getScene().stream()
                 .map(scene -> StoryBoard.builder()
                         .script(script)
@@ -76,26 +99,30 @@ public class StoryboardService {
                         .locate(scene.getLocation())
                         .time(scene.getTime())
                         .summary(scene.getCuts().stream()
-                                .map(cut -> cut.getCut_num() + ": " + cut.getText())
-                                .collect(Collectors.joining("\n")))
+                                .map(cut -> {
+                                    // 각 cut에 대해 처리 ('content' 필드 추가)
+                                    String text = cut.getCut_num() + ": " + cut.getText();
+                                    return text;
+                                })
+                                .collect(Collectors.joining("\n"))) // 여러 cut을 하나의 요약으로 결합
                         .build())
                 .collect(Collectors.toList());
 
+        // 스토리보드를 데이터베이스에 저장
         storyBoardRepository.saveAll(storyBoards);
 
-        /* 스토리보드가 저장된 후, 스토리보다가 속한 Novel의 수정 시간 갱신*/
+        // 소속된 Novel의 수정 시간을 갱신
         Novel novel = script.getNovel();
         novel.updateTimestamp(LocalDateTime.now());
         novelRepository.save(novel);
 
-
         return storyboardResponse;
     }
 
-    // 스토리보드 정보조회
-    public StoryboardDTO.Response getStoryBoardDetail(Long storyboardId){
-        StoryBoard storyBoard = storyBoardRepository.findById(storyboardId).orElseThrow(()-> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+    // 스토리보드 정보 조회
+    public StoryboardDTO.Response getStoryBoardDetail(Long storyboardId) {
+        StoryBoard storyBoard = storyBoardRepository.findById(storyboardId)
+                .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
         return StoryboardDTO.storyBoardConvertToDto(storyBoard);
     }
-
 }
