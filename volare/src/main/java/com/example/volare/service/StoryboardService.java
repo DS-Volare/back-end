@@ -6,6 +6,7 @@ import com.example.volare.global.apiPayload.exception.handler.GeneralHandler;
 import com.example.volare.model.Novel;
 import com.example.volare.model.Script;
 import com.example.volare.model.StoryBoard;
+import com.example.volare.model.StoryBoardCut;
 import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
 import com.example.volare.repository.StoryBoardRepository;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StoryboardService {
 
-    private final String aiServerUrl = "http://116.109.105.142:30156/convert_storyboard/";
+    private final String aiServerUrl = "http://97.83.103.94:4050/convert_storyboard/";
     private final ScriptRepository scriptRepository;
     private final StoryBoardRepository storyBoardRepository;
     private final NovelRepository novelRepository;
@@ -93,19 +94,43 @@ public class StoryboardService {
 
         // AI에서 반환된 storyboardResponse 데이터를 사용하여 스토리보드 저장
         List<StoryBoard> storyBoards = storyboardResponse.getScene().stream()
-                .map(scene -> StoryBoard.builder()
-                        .script(script)
-                        .sceneNum(scene.getScene_num())
-                        .locate(scene.getLocation())
-                        .time(scene.getTime())
-                        .summary(scene.getCuts().stream()
-                                .map(cut -> {
-                                    // 각 cut에 대해 처리 ('content' 필드 추가)
-                                    String text = cut.getCut_num() + ": " + cut.getText();
-                                    return text;
-                                })
-                                .collect(Collectors.joining("\n"))) // 여러 cut을 하나의 요약으로 결합
-                        .build())
+                .map(scene -> {
+                    // StoryBoard 객체 생성 (여기서 먼저 생성)
+                    StoryBoard storyBoard = StoryBoard.builder()
+                            .script(script)
+                            .sceneNum(scene.getScene_num())
+                            .locate(scene.getLocation())
+                            .time(scene.getTime())
+                            .summary(scene.getCuts().stream()
+                                    .map(cut -> {
+                                        // 각 cut에 대해 처리
+                                        String text = cut.getCut_num() + ": " + cut.getText();
+                                        return text;
+                                    })
+                                    .collect(Collectors.joining("\n"))) // 여러 cut을 하나의 요약으로 결합
+                            .build();
+
+                    // StoryBoardCut 리스트 생성
+                    List<StoryBoardCut> cuts = scene.getCuts().stream()
+                            .map(cut -> {
+                                // StoryBoardCut 객체 생성
+                                StoryBoardCut storyBoardCut = StoryBoardCut.builder()
+                                        .cutImage(cut.getCutImage()) // cutImage가 있다면 추가
+                                        .cutNum(cut.getCut_num())
+                                        .text(cut.getText())
+                                        .build();
+
+                                // StoryBoard와 연결
+                                storyBoardCut.setStoryBoard(storyBoard); // 스토리보드와 연결
+                                return storyBoardCut;
+                            })
+                            .collect(Collectors.toList());
+
+                    // StoryBoard에 cuts 설정
+                    storyBoard.setCuts(cuts); // 생성한 cuts 리스트 추가
+
+                    return storyBoard; // 스토리보드 객체 반환
+                })
                 .collect(Collectors.toList());
 
         // 스토리보드를 데이터베이스에 저장
@@ -118,6 +143,7 @@ public class StoryboardService {
 
         return storyboardResponse;
     }
+
 
     // 스토리보드 정보 조회
     public StoryboardDTO.Response getStoryBoardDetail(Long storyboardId) {

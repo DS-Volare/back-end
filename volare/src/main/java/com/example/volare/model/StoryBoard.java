@@ -12,6 +12,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 import static lombok.AccessLevel.PACKAGE;
 import static lombok.AccessLevel.PROTECTED;
 
+
 @Entity
 @Builder
 @Getter
@@ -35,7 +36,9 @@ public class StoryBoard extends BaseEntity {
 
     // 양방향 매핑을 위한 cuts 리스트 추가
     @OneToMany(mappedBy = "storyBoard", cascade = CascadeType.ALL, fetch = LAZY)
+    @Setter
     private List<StoryBoardCut> cuts = new ArrayList<>();
+
 }
 
 
