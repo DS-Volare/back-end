@@ -31,6 +31,8 @@ public class StoryBoardCut extends BaseEntity {
     private String cutImage;
     private int cutNum;
     private String angle_cam;
+
+    @Column(columnDefinition = "TEXT")
     private String text;
 
     // Setter 추가

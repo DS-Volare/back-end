@@ -1,6 +1,7 @@
 package com.example.volare.repository;
 
 import com.example.volare.model.ChatRoomEntity;
+import com.example.volare.model.Script;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,5 +16,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoomEntity,String>
             "JOIN c.script s " +
             "WHERE c.id = :chatRoomId")
     String findStoryTextByChatRoomId( String chatRoomId);
+
+    Optional<ChatRoomEntity> findChatRoomEntityByScript(Script script);
 
 }
