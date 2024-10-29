@@ -7,6 +7,7 @@ import com.example.volare.global.common.auth.model.AuthUser;
 import com.example.volare.service.MessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -26,14 +27,15 @@ public class MessageController {
     public void sendMessage(@DestinationVariable("chatRoomId") String chatRoomId,
                             @Valid @RequestBody MessageDTO.MessageRequestDto question) {
 
-        // TODO: 병렬처리: sendGPTMessage 비동기 통신 중, saveMessage 저장
         // flask 연결- 비동기적으로 GPT 메시지 호출
-        Mono<MessageDTO.MessageResponseDto> responseMono = messageService.sendGPTMessage(chatRoomId, question);
+        //Mono<MessageDTO.MessageResponseDto> responseMono = messageService.sendGPTMessage(chatRoomId, question);
 
+        // 저장 DTO로 변환
         MessageDTO.MessageResponseDto userQuestion = messageService.saveMessage(chatRoomId, question);
-        template.convertAndSend("/sub/chats/" + chatRoomId, userQuestion);
 
-        responseMono.subscribe(gptAnswer -> template.convertAndSend("/sub/chats/" + chatRoomId, gptAnswer));
+        //socket
+        template.convertAndSend("/sub/chats/" + chatRoomId, userQuestion);
+        //responseMono.subscribe(gptAnswer -> template.convertAndSend("/sub/chats/" + chatRoomId, gptAnswer));
     }
 
     // 채팅 내역 조회

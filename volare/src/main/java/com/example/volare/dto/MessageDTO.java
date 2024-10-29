@@ -32,6 +32,24 @@ public class MessageDTO {
 
     }
 
+    @Builder
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MessageKafkaRequestDto {
+        @NotBlank(message = "메시지는 필수입니다.")
+        private String message;
+
+        @NotBlank(message = "채팅방 ID는 필수입니다.")
+        private String chatRoomId; // 카프카에 필요한 chatRoomId 추가
+
+        // MessageEntity를 받아서 필드를 설정하는 생성자
+        public MessageKafkaRequestDto(MessageEntity entity) {
+            this.message = entity.getMessage();
+            this.chatRoomId = entity.getChatRoomId();
+        }
+    }
+
 //RESPONSE
     @Builder
     @Getter
