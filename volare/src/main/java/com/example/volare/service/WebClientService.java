@@ -19,8 +19,8 @@ public class WebClientService {
 
     // webClient 기본 설정
     private final WebClient webClient = WebClient.builder()
-//            .baseUrl("http://localhost:5000")
-            .baseUrl("http://116.109.105.142:30156")
+            .baseUrl("http://localhost:5000")
+//            .baseUrl("http://97.83.103.94:4050")
             .clientConnector(new ReactorClientHttpConnector(
                     HttpClient.create().followRedirect(true)
             ))

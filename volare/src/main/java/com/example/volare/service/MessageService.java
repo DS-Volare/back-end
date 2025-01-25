@@ -10,10 +10,14 @@ import com.example.volare.model.User;
 import com.example.volare.repository.ChatRoomRepository;
 import com.example.volare.repository.MessageRepository;
 import com.example.volare.repository.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -32,25 +36,50 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper; // ObjectMapper 주입
 
     // 메시지 DB 저장
     @Transactional
-    public MessageDTO.MessageResponseDto saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message){
-        log.info("Finding chat room - save");
+    public MessageDTO.MessageResponseDto saveMessage(String chatRoomId, MessageDTO.MessageRequestDto message) {
         // 채팅방 유효성 검사
-        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
-        MessageEntity saveMessage = MessageEntity.builder()
+        ChatRoomEntity chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+
+        // 메시지 저장
+        MessageEntity savedMessage = MessageEntity.builder()
                 .message(message.getMessage())
                 .chatRoomId(chatRoom.getId())
-                .messagetype(Objects.equals(message.getMessageType(), MessageEntity.MessageType.QUESTION.name()) ? MessageEntity.MessageType.QUESTION : MessageEntity.MessageType.GPT)
+                .messagetype(Objects.equals(message.getMessageType(), "QUESTION") ?
+                        MessageEntity.MessageType.QUESTION : MessageEntity.MessageType.GPT)
                 .build();
-        MessageEntity chat = messageRepository.save(saveMessage);
+        MessageEntity chat = messageRepository.save(savedMessage);
+
+        // Kafka로 메시지 전송
+        sendMessageToKafka(chat);
         return MessageDTO.fromEntity(chat);
     }
 
+    private void sendMessageToKafka(MessageEntity messageEntity) {
+        String topic = "GPT_Request_Topic";
+        try {
+            // 객체를 JSON 문자열로 변환
+            String message = objectMapper.writeValueAsString(
+                    new MessageDTO.MessageKafkaRequestDto(messageEntity)
+            );
+
+            // 변환된 JSON 문자열을 Kafka로 전송
+            kafkaTemplate.send(topic, message); // KafkaTemplate<String, String>에 맞게 처리
+            log.info("Sent JSON message to Kafka: {}", message);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting message to JSON: {}", e.getMessage());
+        }
+    }
+
+
     // GPT 메세지 호출
     @Transactional
-    public Mono<MessageDTO.MessageResponseDto> sendGPTMessage(String chatRoomId, MessageDTO.MessageRequestDto message) {
+    public Mono<MessageDTO.MessageResponseDto> sendGPTMessage(String chatRoomId, String message) {
         // 채팅방 유효성 검사 및 WebClient 비동기 호출
         return Mono.fromCallable(() -> {
             log.info("Finding chat room with ID");
@@ -63,7 +92,7 @@ public class MessageService {
                     // GPT 요청 DTO 생성
                     MessageDTO.MessageGPTRequestDto messageGPTRequestDto = MessageDTO.MessageGPTRequestDto
                             .builder()
-                            .message(message.getMessage())
+                            .message(message)
                             .context(chatRoomRepository.findStoryTextByChatRoomId(chatRoomId))
                             .build();
 

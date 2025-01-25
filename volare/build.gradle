@@ -57,6 +57,9 @@ dependencies {
 	//Jackson에 jackson-datatype-jsr310 모듈 추가(LocalDateTime)
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
 
+	// kafka
+	implementation 'org.springframework.kafka:spring-kafka:2.9.8'
+
 
 }
 
