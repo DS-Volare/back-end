@@ -55,7 +55,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: 2024servervolare@gmail.com
-    password: n g u l cr q y s g q x k m q m
+    password: 5mLCZ1V0a+P0N9H4RYcVj30IRgscXAMnCvSlaC16y5Gq814zEgAdjw==
     properties:
       mail:
         smtp:
@@ -72,6 +72,4 @@ server:
 
 logging:
   level:
-    com.example: DEBUG
     org.springframework.data.redis: DEBUG
-
