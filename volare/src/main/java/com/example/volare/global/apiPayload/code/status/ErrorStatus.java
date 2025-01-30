@@ -19,8 +19,11 @@ public enum ErrorStatus implements BaseErrorCode {
     // token 관련 에러 +1
     _INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "TOKEN400", "유효하지 않은 토큰입니다."),
     EXPIRED_ACCESS_TOKEN(HttpStatus.FORBIDDEN, "TOKEN403", "X-AUTH-TOKEN이 만료되었습니다. 토큰 재발급을 실행해주세요."),
-    EXPIRED_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "TOKEN404", "refresh-token이 만료되었습니다. 재로그인이 필요합니다.");
+    EXPIRED_REFRESH_TOKEN(HttpStatus.FORBIDDEN, "TOKEN404", "refresh-token이 만료되었습니다. 재로그인이 필요합니다."),
 
+
+    // email +2
+    EMAIL_NOT_SEND(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL500", "이메일 전송에 실패하였습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
