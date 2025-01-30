@@ -11,10 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,9 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final NovelRepository novelRepository;
 
+
     @Transactional(readOnly = true)
+    //@Async("mailExecutor")
     public void sendMailWithPdf(String  novelId, User user,List<String> fileNames, List<byte[]> fileDataList) throws MessagingException {
         // 1. DB에서 소설 조회
         Novel novel = novelRepository.findById(novelId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
@@ -37,7 +41,7 @@ public class EmailService {
 
         // HTML 내용 설정
         String htmlContent = "<h3 style='color:blue;'>대본 및 스토리보드 변환 신청:</h3>" +
-                novel.getTitle()+"<br> <p>파일을 전송드립니다. 서비스를 이용해주셔서 감사합니다</p>";
+                novel.getTitle()+"<p>파일을 전송드립니다. 서비스를 이용해주셔서 감사합니다</p>";
         helper.setText(htmlContent, true);
 
         // 첨부 파일 추가
@@ -46,6 +50,6 @@ public class EmailService {
         }
 
         mailSender.send(message);
-    }
 
+    }
 }
