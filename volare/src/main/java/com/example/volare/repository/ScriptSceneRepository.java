@@ -12,17 +12,19 @@ import java.util.List;
 @Repository
 public interface ScriptSceneRepository extends JpaRepository<ScriptScene, Long> {
 
-    // scriptId로 각 대본 별 전체 대사 수 조회
+    // scriptId로 각 대본 별 전체 대사 수 조회 (대사만 필터링)
     @Query("SELECT COUNT(c) FROM ScriptScene s " +
-            "JOIN s.contents c WHERE s.id = :sceneId")
+            "JOIN s.contents c " +
+            "WHERE s.id = :sceneId AND c.type = '대사'")
     long countTotalLinesBySceneId(@Param("sceneId") Long sceneId);
 
 
-    //scriptId로 각 대본 내 등장인물별 대사 수 조회
+    // scriptId로 각 대본 내 등장인물별 대사 수 조회 (대사만 필터링)
     @Query("SELECT new com.example.volare.vo.CharacterStatisticsVO(c.character, COUNT(c)) " +
             "FROM ScriptScene s " +
             "JOIN s.contents c " +
-            "WHERE s.id = :sceneId " +
+            "WHERE s.id = :sceneId AND c.type = '대사' " +
             "GROUP BY c.character")
     List<CharacterStatisticsVO> countLinesByCharacter(@Param("sceneId") Long sceneId);
+
 }

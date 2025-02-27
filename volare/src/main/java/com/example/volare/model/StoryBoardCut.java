@@ -32,5 +32,13 @@ public class StoryBoardCut extends BaseEntity {
     private int cutNum;
     private String angle_cam;
 
+    @Column(columnDefinition = "TEXT")
+    private String text;
+
+    // Setter 추가
+    public void setStoryBoard(StoryBoard storyBoard) {
+        this.storyBoard = storyBoard;
+    }
+
 
 }

@@ -14,8 +14,10 @@ public class StoryboardController {
     private final StoryboardService storyboardService;
 
     @PostMapping("/generate-storyboard")
-    public ApiResponse<StoryboardDTO.Response> generateStoryboard(@RequestBody StoryboardDTO.Request request) {
-        StoryboardDTO.Response response = storyboardService.generateStoryboard(request);
+    public ApiResponse<StoryboardDTO.Response> generateAndSaveStoryboard(@RequestBody StoryboardDTO.Request request) {
+        // 스크립트 ID를 요청에서 가져와 저장 시 사용
+        Long scriptId = request.getScriptId();
+        StoryboardDTO.Response response = storyboardService.saveStoryboard(scriptId, request);
         return ApiResponse.onSuccess(response);
     }
 

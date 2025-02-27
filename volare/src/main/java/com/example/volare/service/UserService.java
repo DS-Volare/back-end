@@ -6,6 +6,7 @@ import com.example.volare.global.apiPayload.exception.GeneralException;
 import com.example.volare.global.common.auth.AuthRedisService;
 import com.example.volare.global.common.auth.JwtService;
 import com.example.volare.model.*;
+import com.example.volare.repository.ChatRoomRepository;
 import com.example.volare.repository.NovelRepository;
 import com.example.volare.repository.ScriptRepository;
 import com.example.volare.repository.StoryBoardRepository;
@@ -38,6 +39,7 @@ public class UserService {
     private final NovelService novelService;
     private final ScriptService scriptService;
     private final StoryboardService storyboardService;
+    private final ChatRoomRepository chatRoomRepository;
 
     public void signOut(String accessToken, String refreshToken) {
         long expiredAccessTokenTime = jwtService.getClaims((accessToken)).getExpiration().getTime() - new Date().getTime();
@@ -108,6 +110,8 @@ public class UserService {
                 .map(s -> new ConvertWrapper<>(scriptService.getScriptDetail(s.getId())))
                 .orElse(new ConvertWrapper<>(false,"사용자가 과거의 생성한 대본 내역이 없습니다."));
 
+        // 채팅방 ID 조회
+        ChatRoomEntity chatRoom = chatRoomRepository.findChatRoomEntityByScript(script).orElse(null);
 
         //스토리보드 조회
         StoryBoard storyBoard = storyBoardRepository.findByScript(script).orElse(null);
@@ -115,7 +119,7 @@ public class UserService {
                 .map(sb -> new ConvertWrapper<>(storyboardService.getStoryBoardDetail(sb.getId())))
                 .orElse(new ConvertWrapper<>(false,"사용자가 과거의 생성한 스토리보드 내역이 없습니다."));
 
-        return ConvertDetailDTO.fromDTO(novelDetail,scriptDetailWrapper,storyBoardDetailWrapper);
+        return ConvertDetailDTO.fromDTO(novelDetail,scriptDetailWrapper,chatRoom,storyBoardDetailWrapper);
 
     }
 

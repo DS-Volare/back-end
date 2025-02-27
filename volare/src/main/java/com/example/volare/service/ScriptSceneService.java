@@ -25,7 +25,7 @@ public class ScriptSceneService {
     public StatisticsDTO.AppearanceRateDTO getCharacterStatistics(Long scriptId) {
 
         // 대본 존재 여부 검증
-        Script script = scriptRepository.findById(scriptId).orElseThrow(()-> new GeneralHandler(ErrorStatus._BAD_REQUEST));
+        Script script = scriptRepository.findById(scriptId).orElseThrow(() -> new GeneralHandler(ErrorStatus._BAD_REQUEST));
 
         // 대본의 모든 ScriptScene PK 조회
         List<Long> sceneIds = script.getScriptScenes().stream()
@@ -43,7 +43,7 @@ public class ScriptSceneService {
         // 등장인물별 대사 수를 집계
         Map<String, Long> aggregatedCharacterCounts = allCharacterCounts.stream()
                 .collect(Collectors.groupingBy(
-                        CharacterStatisticsVO::getCharacterName,
+                        vo -> vo.getCharacterName() != null ? vo.getCharacterName() : "Unknown", // null 처리
                         Collectors.summingLong(CharacterStatisticsVO::getCount)
                 ));
 
